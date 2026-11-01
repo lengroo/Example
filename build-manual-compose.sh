@@ -22,6 +22,14 @@
 # ui-geometry-android 1.12.0, window 1.5.0, and the other Compose
 # runtime-compose / savedstate-compose / runtime-retain / material3
 # window-size-class jars listed in the jars/ directory.
+#
+# NOTE (1.1.2): 1.1.1 still closed on launch, so the launcher was
+# split: MainActivity is now framework-only (no Compose imports) and
+# shows library load checks + the last crash, with a button to open
+# the MiUIX UI in ComposeActivity. Core was also upgraded to the
+# version Compose 1.12 actually requires: core/core-ktx 1.13.1 ->
+# 1.16.0, savedstate-android 1.3.1 -> 1.3.2, to rule out a
+# NoSuchMethodError from the version mismatch.
 set -euo pipefail
 cd "$(dirname "$0")"
 PROJECT_DIR="$PWD"
@@ -83,7 +91,7 @@ done
   --java "$OUT/work/R" \
   $EXTRA \
   --min-sdk-version 26 --target-sdk-version 35 \
-  --version-code 4 --version-name 1.1.1 \
+  --version-code 5 --version-name 1.1.2 \
   --auto-add-overlay \
   "$OUT/work/compiled-res/"*.zip
 
