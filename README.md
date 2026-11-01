@@ -1,3 +1,5 @@
+**Language:** [English](README.md) | [中文](README.zh-CN.md)
+
 # LibXposed Example
 
 A minimal, modern libxposed module (API 101/102) for LSPosed / Vector.
