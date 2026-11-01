@@ -1,4 +1,9 @@
 #!/bin/bash
+# NOTE (1.1.0): The UI is now Compose + MiUIX, so this pre-Compose
+# manual script no longer builds the current MainActivity on its own.
+# Use build-manual-compose.sh instead (it handles the Compose compiler
+# plugin, AAR resources/R classes, and the newer D8 needed for current
+# androidx libraries). This file is kept for reference only.
 # Manual APK build for the libxposed example.
 #
 # The normal route is Gradle:  ./gradlew :app:assembleDebug
@@ -41,7 +46,7 @@ sed 's|<manifest |<manifest package="com.example.libxposedexample" |' \
     -I "$ANDROID_JAR" \
     --manifest "$OUT/AndroidManifest.xml" \
     --min-sdk-version 26 --target-sdk-version 35 \
-    --version-code 2 --version-name 1.0.1 \
+    --version-code 3 --version-name 1.1.0 \
     "$OUT/compiled-res.zip"
 
 echo "== 2. Compile Kotlin (libxposed api = compileOnly, service = implementation) =="

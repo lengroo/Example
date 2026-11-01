@@ -4,6 +4,13 @@
 
 A minimal, modern libxposed module (API 101/102) for LSPosed / Vector.
 
+The landing UI is built with Compose + MiUIX
+(`top.yukonga.miuix.kmp:miuix-ui-android:0.9.4`, see
+https://github.com/compose-miuix-ui/miuix): `MainActivity` is a
+`ComponentActivity` that calls `setContent { MiuixTheme { Scaffold { ... } } }`,
+with a `SmallTopAppBar` and a `LazyColumn` of `Card`s. The hook itself
+(`ExampleModule`) is unchanged and does not use Compose or MiUIX.
+
 ## What it does
 
 Nothing destructive, and nothing that changes an app's behaviour:
@@ -57,21 +64,28 @@ with its client (even a trivial Gradle project failed the same way),
 so the APK was built step by step instead:
 
 ```sh
-./build-manual.sh
+./build-manual-compose.sh
 # app-debug.apk
 ```
 
-That script runs: `aapt2 compile/link` → `kotlinc` →
-`d8` → zip assembly (adding `classes.dex` and `META-INF/xposed/*`) →
-`zipalign` → `apksigner` (debug key).
+That script runs: `aapt2 compile/link` (app + library AAR resources,
+generating R classes) → `kotlinc` with the Compose compiler plugin →
+`javac` for the generated R classes → `d8` (standalone R8/D8 8.11.32,
+because d8 from build-tools 34.0.0 crashes on several current
+androidx classes) → zip assembly (adding `classes*.dex` and
+`META-INF/xposed/*`) → `zipalign` → `apksigner` (debug key).
+It needs the library jars in `build-manual-compose/jars/` (classes.jar
+extracted from the MiUIX / Compose / activity AARs, plus
+lifecycle-common and kotlinx-coroutines); that directory is a local
+build cache and is not part of the source tree.
 
 Note on the service AAR: d8 from build-tools 34.0.0 fails on
 `io.github.libxposed.service.HookedTarget$State` with a
 NullPointerException, so the manual build bundles only the module's
-own classes and kotlin-stdlib, not the service AAR. The hook itself
-does not use the service API, so the resulting APK is still a valid
-module; if you build with Gradle, the service classes are included
-as usual.
+own classes, the Compose/MiUIX/activity libraries, and kotlin-stdlib,
+not the service AAR. The hook itself does not use the service API,
+so the resulting APK is still a valid module; if you build with
+Gradle, the service classes are included as usual.
 
 ## Install and try
 
@@ -98,4 +112,4 @@ restarted after enabling.
   — a plain landing screen explaining the module
 - `app/src/main/AndroidManifest.xml`
 - `app/src/main/resources/META-INF/xposed/{module.prop,java_init.list,scope.list}`
-- `app/build.gradle.kts`, `gradle/libs.versions.toml`, `build-manual.sh`
+- `app/build.gradle.kts`, `gradle/libs.versions.toml`, `build-manual-compose.sh`

@@ -1,6 +1,7 @@
 plugins {
     alias(libs.plugins.android.application)
     alias(libs.plugins.kotlin.android)
+    alias(libs.plugins.kotlin.compose)
 }
 
 android {
@@ -12,8 +13,8 @@ android {
         applicationId = "com.example.libxposedexample"
         minSdk = 26
         targetSdk = 35
-        versionCode = 2
-        versionName = "1.0.1"
+        versionCode = 3
+        versionName = "1.1.0"
     }
 
     buildTypes {
@@ -42,6 +43,10 @@ android {
         abortOnError = false
         checkReleaseBuilds = false
     }
+
+    buildFeatures {
+        compose = true
+    }
 }
 
 dependencies {
@@ -50,4 +55,11 @@ dependencies {
     compileOnly(libs.libxposed.api)
     // service is packaged: it lets the module app talk to the framework.
     implementation(libs.libxposed.service)
+    // UI: Compose + MiUIX. MainActivity is a ComponentActivity that
+    // calls setContent { MiuixTheme { Scaffold { ... } } }.
+    // MiUIX 0.9.4 is a Compose Multiplatform library; its Android
+    // artifact brings in the JetBrains Compose foundation/ui layers,
+    // which resolve to the matching androidx.compose artifacts.
+    implementation(libs.miuix.ui)
+    implementation(libs.activity.compose)
 }

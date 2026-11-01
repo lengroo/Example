@@ -1,12 +1,20 @@
 [versions]
-agp = "8.8.0"
-kotlin = "2.1.0"
+agp = "8.11.0"
+kotlin = "2.4.20"
 libxposed = "102.0.0"
+miuix = "0.9.4"
+activity-compose = "1.11.0"
 
 [libraries]
 libxposed-api = { group = "io.github.libxposed", name = "api", version.ref = "libxposed" }
 libxposed-service = { group = "io.github.libxposed", name = "service", version.ref = "libxposed" }
+# MiUIX (Compose Multiplatform UI library, Android artifact).
+# See https://github.com/compose-miuix-ui/miuix
+miuix-ui = { group = "top.yukonga.miuix.kmp", name = "miuix-ui-android", version.ref = "miuix" }
+activity-compose = { group = "androidx.activity", name = "activity-compose", version.ref = "activity-compose" }
 
 [plugins]
 android-application = { id = "com.android.application", version.ref = "agp" }
 kotlin-android = { id = "org.jetbrains.kotlin.android", version.ref = "kotlin" }
+# Compose compiler plugin, same version as Kotlin.
+kotlin-compose = { id = "org.jetbrains.kotlin.plugin.compose", version.ref = "kotlin" }

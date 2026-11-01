@@ -4,6 +4,13 @@
 
 一个最小化的、现代的 libxposed 模块（API 101/102），适用于 LSPosed / Vector。
 
+启动界面使用 Compose + MiUIX 构建
+（`top.yukonga.miuix.kmp:miuix-ui-android:0.9.4`，见
+https://github.com/compose-miuix-ui/miuix）：`MainActivity` 是一个
+`ComponentActivity`，调用 `setContent { MiuixTheme { Scaffold { ... } } }`，
+包含一个 `SmallTopAppBar` 和一个由 `Card` 组成的 `LazyColumn`。Hook 本身
+（`ExampleModule`）没有变化，也不使用 Compose 或 MiUIX。
+
 ## 它能做什么
 
 没有任何破坏性行为，也不会改变任何应用的行为：
@@ -56,20 +63,28 @@
 因此改为一步一步手动构建 APK：
 
 ```sh
-./build-manual.sh
+./build-manual-compose.sh
 # app-debug.apk
 ```
 
-该脚本依次运行：`aapt2 compile/link` → `kotlinc` →
-`d8` → zip 组装（加入 `classes.dex` 和 `META-INF/xposed/*`）→
+该脚本依次运行：`aapt2 compile/link`（应用 + 依赖库 AAR 的资源，
+生成 R 类）→ 带 Compose 编译器插件的 `kotlinc` →
+为生成的 R 类运行 `javac` → `d8`（独立的 R8/D8 8.11.32，因为
+build-tools 34.0.0 的 d8 在处理多个较新的 androidx 类时会崩溃）→
+zip 组装（加入 `classes*.dex` 和 `META-INF/xposed/*`）→
 `zipalign` → `apksigner`（调试密钥）。
+它需要 `build-manual-compose/jars/` 中的依赖库 jar（从 MiUIX /
+Compose / activity AAR 中提取的 classes.jar，以及
+lifecycle-common 和 kotlinx-coroutines）；该目录是本地构建缓存，
+不属于源码树。
 
 关于 service AAR 的说明：build-tools 34.0.0 的 d8 在处理
 `io.github.libxposed.service.HookedTarget$State` 时会因
 NullPointerException 而失败，因此手动构建只打包了模块自身的
-类和 kotlin-stdlib，没有打包 service AAR。Hook 本身并不使用
-service API，所以生成的 APK 仍然是一个有效的模块；如果你用
-Gradle 构建，service 类会像往常一样被包含进来。
+类、Compose / MiUIX / activity 依赖库和 kotlin-stdlib，没有打包
+service AAR。Hook 本身并不使用 service API，所以生成的 APK
+仍然是一个有效的模块；如果你用 Gradle 构建，service 类会像
+往常一样被包含进来。
 
 ## 安装与试用
 
@@ -95,4 +110,4 @@ adb logcat -s LibXposedExample
   —— 一个简单的启动说明页面
 - `app/src/main/AndroidManifest.xml`
 - `app/src/main/resources/META-INF/xposed/{module.prop,java_init.list,scope.list}`
-- `app/build.gradle.kts`、`gradle/libs.versions.toml`、`build-manual.sh`
+- `app/build.gradle.kts`、`gradle/libs.versions.toml`、`build-manual-compose.sh`
