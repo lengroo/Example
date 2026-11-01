@@ -41,7 +41,7 @@ sed 's|<manifest |<manifest package="com.example.libxposedexample" |' \
     -I "$ANDROID_JAR" \
     --manifest "$OUT/AndroidManifest.xml" \
     --min-sdk-version 26 --target-sdk-version 35 \
-    --version-code 1 --version-name 1.0.0 \
+    --version-code 2 --version-name 1.0.1 \
     "$OUT/compiled-res.zip"
 
 echo "== 2. Compile Kotlin (libxposed api = compileOnly, service = implementation) =="

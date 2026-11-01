@@ -2,6 +2,7 @@ package com.example.libxposedexample
 
 import android.app.Activity
 import android.os.Bundle
+import android.widget.ScrollView
 import android.widget.TextView
 
 /**
@@ -11,10 +12,22 @@ import android.widget.TextView
  * process that LSPosed injects it into. This activity is just a
  * landing screen explaining that, so the APK is a normal, launchable app.
  * It uses only framework APIs (no AndroidX) to keep the example minimal.
+ *
+ * Layout fix: the previous version called setPadding(48, 48, 48, 48),
+ * which is 48 *pixels*, not dp — on a high-density screen that is only
+ * about 16dp, so the first line of text started right underneath the
+ * title/action bar and was clipped by it (see the screenshot).
+ * This version converts padding to dp properly, gives the text a
+ * generous top margin below the title bar, and wraps it in a
+ * ScrollView so the whole text stays reachable on small screens.
  */
 class MainActivity : Activity() {
     override fun onCreate(savedInstanceState: Bundle?) {
         super.onCreate(savedInstanceState)
+
+        val density = resources.displayMetrics.density
+        fun dp(value: Int): Int = (value * density + 0.5f).toInt()
+
         val text = TextView(this).apply {
             text = """
                 LibXposed Example
@@ -32,8 +45,15 @@ class MainActivity : Activity() {
                 any app behaviour, return values, or arguments.
             """.trimIndent()
             textSize = 16f
-            setPadding(48, 48, 48, 48)
+            // 24dp sides/bottom, 32dp on top so the first line sits
+            // clearly below the title bar instead of underneath it.
+            setPadding(dp(24), dp(32), dp(24), dp(24))
         }
-        setContentView(text)
+
+        val scrollView = ScrollView(this).apply {
+            fitsSystemWindows = true
+            addView(text)
+        }
+        setContentView(scrollView)
     }
 }
