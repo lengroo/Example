@@ -1,0 +1,5 @@
+<?xml version="1.0" encoding="utf-8"?>
+<resources>
+    <string name="app_name">LibXposed Example</string>
+    <string name="module_description">A minimal libxposed example: logs when a scoped app loads and when its activities resume. No behaviour is changed.</string>
+</resources>

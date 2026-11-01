@@ -1,0 +1,2 @@
+# Empty on purpose: pick the target app(s) in LSPosed Manager.
+# The example only logs Activity resumes in scoped apps; it changes nothing.
