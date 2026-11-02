@@ -10,17 +10,24 @@
         android:label="@string/app_name"
         android:description="@string/module_description"
         android:theme="@android:style/Theme.DeviceDefault.Light">
+        <!-- 1.1.7: the MiUIX interface is now the default entry.
+             The system title bar is hidden (NoActionBar) on both
+             activities, so the MiUIX screen shows only its own
+             SmallTopAppBar and the launcher shows only its own
+             title TextView, instead of two stacked titles. -->
         <activity
             android:name=".MainActivity"
-            android:exported="true">
+            android:exported="false"
+            android:theme="@android:style/Theme.DeviceDefault.Light.NoActionBar" />
+        <activity
+            android:name=".ComposeActivity"
+            android:exported="true"
+            android:theme="@android:style/Theme.DeviceDefault.Light.NoActionBar">
             <intent-filter>
                 <action android:name="android.intent.action.MAIN" />
                 <category android:name="android.intent.category.LAUNCHER" />
             </intent-filter>
         </activity>
-        <activity
-            android:name=".ComposeActivity"
-            android:exported="false" />
     </application>
 
 </manifest>

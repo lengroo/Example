@@ -1,5 +1,6 @@
 package com.example.libxposedexample
 
+import android.content.Intent
 import android.os.Bundle
 import android.widget.TextView
 import androidx.activity.ComponentActivity
@@ -15,7 +16,9 @@ import androidx.compose.foundation.layout.padding
 import androidx.compose.foundation.lazy.LazyColumn
 import androidx.compose.runtime.Composable
 import androidx.compose.ui.Modifier
+import androidx.compose.ui.platform.LocalContext
 import androidx.compose.ui.unit.dp
+import top.yukonga.miuix.kmp.basic.Button
 import top.yukonga.miuix.kmp.basic.Card
 import top.yukonga.miuix.kmp.basic.Scaffold
 import top.yukonga.miuix.kmp.basic.SmallTitle
@@ -29,6 +32,13 @@ import top.yukonga.miuix.kmp.theme.lightColorScheme
  * The real MiUIX interface, moved here in 1.1.2 so the launcher
  * ([MainActivity]) can stay on framework classes only.
  *
+ * 1.1.7: this is now the DEFAULT entry (MAIN/LAUNCHER in the
+ * manifest). The system title bar is hidden by the NoActionBar
+ * theme, so only the MiUIX SmallTopAppBar shows at the top
+ * (the screenshot in 1.1.6 showed both stacked). A fixed button
+ * in Scaffold's bottomBar switches back to the original
+ * framework interface ([MainActivity]).
+ *
  * If setContent itself throws, fall back to a framework TextView
  * with the exception, and [CrashLog] (installed by the launcher in
  * the same process) records uncaught composition crashes for the
@@ -38,6 +48,9 @@ class ComposeActivity : ComponentActivity() {
     override fun onCreate(savedInstanceState: Bundle?) {
         super.onCreate(savedInstanceState)
         CrashLog.install(this)
+        // Belt and braces for the 1.1.6 duplicate-title screenshot:
+        // hide the system action bar even if the theme is ignored.
+        actionBar?.hide()
         try {
             setContent {
                 val colors = if (isSystemInDarkTheme()) darkColorScheme() else lightColorScheme()
@@ -45,6 +58,21 @@ class ComposeActivity : ComponentActivity() {
                     Scaffold(
                         topBar = {
                             SmallTopAppBar(title = "LibXposed Example")
+                        },
+                        bottomBar = {
+                            val context = LocalContext.current
+                            Button(
+                                onClick = {
+                                    context.startActivity(
+                                        Intent(context, MainActivity::class.java),
+                                    )
+                                },
+                                modifier = Modifier
+                                    .fillMaxWidth()
+                                    .padding(12.dp),
+                            ) {
+                                Text(text = "Back to original interface")
+                            }
                         },
                         content = { paddingValues ->
                             ExampleScreen(paddingValues = paddingValues)

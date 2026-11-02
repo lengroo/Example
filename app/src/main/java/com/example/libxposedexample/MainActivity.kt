@@ -47,7 +47,7 @@ class MainActivity : Activity() {
         }
 
         val title = TextView(this).apply {
-            text = "LibXposed Example 1.1.6"
+            text = "LibXposed Example 1.1.7"
             textSize = 22f
             setPadding(0, 0, 0, dp(24))
         }

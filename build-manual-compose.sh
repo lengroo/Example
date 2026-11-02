@@ -55,6 +55,12 @@
 # the separate miuix-shader-android 0.9.4 artifact, a compile
 # dependency of miuix-squircle-android that was never downloaded.
 # 1.1.6 adds miuix-shader-android-0.9.4.aar / .jar to the dex.
+#
+# NOTE (1.1.7): MiUIX is now the default entry (ComposeActivity is
+# MAIN/LAUNCHER, MainActivity is the secondary original interface),
+# both activities use NoActionBar so the system title bar no longer
+# stacks on top of the MiUIX top bar, and Scaffold's bottomBar
+# gains a "Back to original interface" button to MainActivity.
 set -euo pipefail
 cd "$(dirname "$0")"
 PROJECT_DIR="$PWD"
@@ -116,7 +122,7 @@ done
   --java "$OUT/work/R" \
   $EXTRA \
   --min-sdk-version 26 --target-sdk-version 35 \
-  --version-code 9 --version-name 1.1.6 \
+  --version-code 10 --version-name 1.1.7 \
   --auto-add-overlay \
   "$OUT/work/compiled-res/"*.zip
 
