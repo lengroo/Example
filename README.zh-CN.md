@@ -180,6 +180,17 @@ service AAR。Hook 本身并不使用 service API，所以生成的 APK
   创建一个新的，这样返回栈永远不会超过两个界面，返回时
   也不再需要按切换次数多次返回。
 
+## Telegram 转发
+
+发布新版本时，GitHub Actions 工作流
+（`.github/workflows/notify-telegram.yml`）会自动通过 Telegram
+Bot API 把发布版 APK 发送到 Telegram 频道。它需要两个仓库
+密钥（Settings > Secrets and variables > Actions）：
+`TELEGRAM_BOT_TOKEN` 和 `TELEGRAM_CHAT_ID`。这两个值都不
+会存放在本仓库中——工作流只引用密钥名称。如需在不发布新版本
+的情况下测试，可在 Actions 标签页手动运行该工作流，并填入
+一个已有版本的标签。
+
 ## 调试版与发布版
 
 同一份源码可以产出两个版本，依据 APK 是否可调试来区分

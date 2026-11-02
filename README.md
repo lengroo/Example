@@ -190,6 +190,18 @@ you build with Gradle, the service classes are included as usual.
   one on every tap, so the back stack never grows past the two
   interfaces and backing out no longer needs one press per switch.
 
+## Telegram forwarding
+
+When a release is published, a GitHub Actions workflow
+(`.github/workflows/notify-telegram.yml`) automatically sends
+the release APK to a Telegram channel via the Telegram Bot API.
+It needs two repository secrets (Settings > Secrets and
+variables > Actions): `TELEGRAM_BOT_TOKEN` and
+`TELEGRAM_CHAT_ID`. Neither value is stored in this repo — the
+workflow only references the secret names. To test it without
+a new release, run it manually from the Actions tab with an
+existing release tag.
+
 ## Debug and release builds
 
 One source tree produces both, gated on whether the APK is
