@@ -39,7 +39,7 @@ class MainActivity : Activity() {
         }
 
         val title = TextView(this).apply {
-            text = "LibXposed Example 1.1.2"
+            text = "LibXposed Example 1.1.3"
             textSize = 22f
         }
         layout.addView(title)
@@ -103,6 +103,8 @@ class MainActivity : Activity() {
             "androidx.compose.ui.platform.ComposeView",
             "androidx.activity.ComponentActivity",
             "androidx.activity.compose.ComponentActivityKt",
+            "androidx.arch.core.internal.FastSafeIterableMap",
+            "androidx.core.R\$id",
             "androidx.core.view.ViewCompat",
             "androidx.window.layout.WindowMetricsCalculator",
             "top.yukonga.miuix.kmp.theme.MiuixThemeKt",

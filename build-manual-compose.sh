@@ -30,6 +30,15 @@
 # version Compose 1.12 actually requires: core/core-ktx 1.13.1 ->
 # 1.16.0, savedstate-android 1.3.1 -> 1.3.2, to rule out a
 # NoSuchMethodError from the version mismatch.
+#
+# NOTE (1.1.3): the 1.1.2 crash log on the phone was exact:
+# NoClassDefFoundError: androidx.arch.core.internal.FastSafeIterableMap
+# at LifecycleRegistry.<init> -> ComponentActivity.<init> ->
+# ComposeActivity.<init>, and ViewCompat failed with a missing R$id.
+# Both were missing from the dex: arch-core-runtime was never added,
+# and the generated R classes were never dexed (see step 4). 1.1.3
+# adds arch-core-runtime 2.2.0 / arch-core-common 2.2.0 and dexes
+# the R classes.
 set -euo pipefail
 cd "$(dirname "$0")"
 PROJECT_DIR="$PWD"
@@ -91,7 +100,7 @@ done
   --java "$OUT/work/R" \
   $EXTRA \
   --min-sdk-version 26 --target-sdk-version 35 \
-  --version-code 5 --version-name 1.1.2 \
+  --version-code 6 --version-name 1.1.3 \
   --auto-add-overlay \
   "$OUT/work/compiled-res/"*.zip
 
@@ -117,8 +126,14 @@ for j in "$OUT"/jars/*.jar; do
   DEX_CP="$DEX_CP $j"
 done
 (cd "$OUT/classes" && "$JAR" cf "$OUT/work/app-classes.jar" .)
+# NOTE (1.1.3): the generated R classes live in $OUT/work/classes,
+# NOT in $OUT/classes, so they were never dexed before 1.1.3. Library
+# code (e.g. ViewCompat) references androidx.core.R$id as a non-final
+# field, so its class loading failed on the phone with
+# NoClassDefFoundError for R$id. Pack the R classes and dex them too.
+(cd "$OUT/work/classes" && "$JAR" cf "$OUT/work/r-classes.jar" .)
 $D8 --release --min-api 26 --output "$OUT/work/dex" \
-  "$OUT/work/app-classes.jar" $DEX_CP "$HOME/tools/kotlinc/lib/kotlin-stdlib.jar"
+  "$OUT/work/app-classes.jar" "$OUT/work/r-classes.jar" $DEX_CP "$HOME/tools/kotlinc/lib/kotlin-stdlib.jar"
 
 echo "== 5. Assemble, zipalign, sign =="
 python3 - "$OUT/work/dex" "$OUT/work/base.apk" "$OUT/work/unsigned.apk" << 'PY'
