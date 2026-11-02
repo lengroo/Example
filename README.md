@@ -21,11 +21,13 @@ It shows, in MiUIX `Card`s:
 - **From the 1.0 interface** — the full text of the original
   framework interface, kept verbatim.
 
-A fixed button at the bottom, **"Back to original interface"**,
-switches to the **original interface** (`MainActivity`). That screen
-is deliberately built with framework classes only — no Compose, no
-MiUIX, no androidx imports — so it still works even if the MiUIX
-screen fails to start. It shows:
+A button at the top right of the MiUIX top bar, **"Original"**,
+switches to the **original interface** (`MainActivity`). That
+button, and the diagnostics below, are debugging features: they
+appear only in the debug build (see "Debug and release builds").
+That screen is deliberately built with framework classes only —
+no Compose, no MiUIX, no androidx imports — so it still works
+even if the MiUIX screen fails to start. It shows:
 
 - The same introduction and 1.0-era text.
 - **Library checks** — whether each key Compose / MiUIX / androidx
@@ -176,3 +178,25 @@ you build with Gradle, the service classes are included as usual.
 - **1.1.7** — MiUIX is the default entry, the system title bar is
   hidden, and a bottom button switches back to the original
   interface.
+- **1.1.8** — the switch button moves to the top bar, and both
+  a debug and a release APK are published (see below).
+
+## Debug and release builds
+
+One source tree produces both, gated on whether the APK is
+debuggable (`DebugFeatures`, checked against
+`ApplicationInfo.FLAG_DEBUGGABLE`):
+
+- **Debug** (`app-debug.apk`, `aapt2 --debug-mode`, and Gradle's
+  debug build type): the MiUIX top bar shows the "Original"
+  switch button, the original interface shows library checks and
+  the last crash, and `CrashLog` records crashes.
+- **Release** (`app-release.apk`, no `--debug-mode`, and Gradle's
+  release build type): none of that debugging UI appears. The
+  MiUIX interface is clean, with no switch button.
+
+Both are signed here with the local debug keystore (testing only);
+a production release would need its own release key. Note that
+the diagnostic classes are still present in the release dex —
+their UI is simply unreachable, with no switch button to open
+them.

@@ -18,8 +18,8 @@ import androidx.compose.runtime.Composable
 import androidx.compose.ui.Modifier
 import androidx.compose.ui.platform.LocalContext
 import androidx.compose.ui.unit.dp
-import top.yukonga.miuix.kmp.basic.Button
 import top.yukonga.miuix.kmp.basic.Card
+import top.yukonga.miuix.kmp.basic.TextButton
 import top.yukonga.miuix.kmp.basic.Scaffold
 import top.yukonga.miuix.kmp.basic.SmallTitle
 import top.yukonga.miuix.kmp.basic.SmallTopAppBar
@@ -35,9 +35,12 @@ import top.yukonga.miuix.kmp.theme.lightColorScheme
  * 1.1.7: this is now the DEFAULT entry (MAIN/LAUNCHER in the
  * manifest). The system title bar is hidden by the NoActionBar
  * theme, so only the MiUIX SmallTopAppBar shows at the top
- * (the screenshot in 1.1.6 showed both stacked). A fixed button
- * in Scaffold's bottomBar switches back to the original
- * framework interface ([MainActivity]).
+ * (the screenshot in 1.1.6 showed both stacked).
+ *
+ * 1.1.8: the UI switch button moved from Scaffold's bottomBar to
+ * the top bar (SmallTopAppBar actions, top-right), and it is a
+ * debugging feature: it only appears in the debuggable build.
+ * The release build has no switch button and no diagnostic UI.
  *
  * If setContent itself throws, fall back to a framework TextView
  * with the exception, and [CrashLog] (installed by the launcher in
@@ -57,22 +60,27 @@ class ComposeActivity : ComponentActivity() {
                 MiuixTheme(colors = colors) {
                     Scaffold(
                         topBar = {
-                            SmallTopAppBar(title = "LibXposed Example")
-                        },
-                        bottomBar = {
-                            val context = LocalContext.current
-                            Button(
-                                onClick = {
-                                    context.startActivity(
-                                        Intent(context, MainActivity::class.java),
-                                    )
+                            SmallTopAppBar(
+                                title = "LibXposed Example",
+                                actions = {
+                                    // 1.1.8: switch button at the top,
+                                    // debug builds only.
+                                    val context = LocalContext.current
+                                    if (DebugFeatures.isEnabled(context)) {
+                                        TextButton(
+                                            text = "Original",
+                                            onClick = {
+                                                context.startActivity(
+                                                    Intent(
+                                                        context,
+                                                        MainActivity::class.java,
+                                                    ),
+                                                )
+                                            },
+                                        )
+                                    }
                                 },
-                                modifier = Modifier
-                                    .fillMaxWidth()
-                                    .padding(12.dp),
-                            ) {
-                                Text(text = "Back to original interface")
-                            }
+                            )
                         },
                         content = { paddingValues ->
                             ExampleScreen(paddingValues = paddingValues)
@@ -82,7 +90,13 @@ class ComposeActivity : ComponentActivity() {
             }
         } catch (e: Throwable) {
             val view = TextView(this)
-            view.text = "MiUIX failed to start:\n${e.javaClass.name}: ${e.message}\n\n${e.stackTraceToString().take(3000)}"
+            // 1.1.8: the stack trace is debugging detail, shown
+            // only in the debuggable build.
+            view.text = if (DebugFeatures.isEnabled(this)) {
+                "MiUIX failed to start:\n${e.javaClass.name}: ${e.message}\n\n${e.stackTraceToString().take(3000)}"
+            } else {
+                "MiUIX failed to start."
+            }
             val d = resources.displayMetrics.density
             view.setPadding((24 * d).toInt(), (72 * d).toInt(), (24 * d).toInt(), (24 * d).toInt())
             setContentView(view)

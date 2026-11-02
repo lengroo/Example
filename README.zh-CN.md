@@ -21,8 +21,10 @@
 - **From the 1.0 interface** —— 原始框架界面的完整文本，
   原样保留。
 
-底部有一个固定按钮 **"Back to original interface"**（返回原始界面），
-点击可切换到**原始界面**（`MainActivity`）。这个界面是特意只用
+MiUIX 顶栏右上角有一个按钮 **"Original"**（原始界面），
+点击可切换到**原始界面**（`MainActivity`）。这个按钮和下面的
+诊断功能都是调试功能：只在调试版中出现（见“调试版与发布版”）。
+这个界面是特意只用
 框架类构建的——不用 Compose、不用 MiUIX、不用 androidx——所以
 即使 MiUIX 界面无法启动，它仍然可以正常工作。它展示：
 
@@ -167,3 +169,22 @@ service AAR。Hook 本身并不使用 service API，所以生成的 APK
   `RuntimeShader_androidKt`。
 - **1.1.7** —— MiUIX 成为默认入口，隐藏系统标题栏，
   底部按钮可切换回原始界面。
+- **1.1.8** —— 切换按钮移到顶栏，同时发布调试版和发布版
+  两个 APK（见下文）。
+
+## 调试版与发布版
+
+同一份源码可以产出两个版本，依据 APK 是否可调试来区分
+（`DebugFeatures`，检查 `ApplicationInfo.FLAG_DEBUGGABLE`）：
+
+- **调试版**（`app-debug.apk`，`aapt2 --debug-mode`，以及
+  Gradle 的 debug 构建类型）：MiUIX 顶栏显示 "Original"
+  切换按钮，原始界面显示依赖库检查和上次崩溃，
+  `CrashLog` 会记录崩溃。
+- **发布版**（`app-release.apk`，不加 `--debug-mode`，以及
+  Gradle 的 release 构建类型）：不出现上述任何调试界面。
+  MiUIX 界面是干净的，没有切换按钮。
+
+两者在这里都用本地调试密钥签名（仅供测试）；正式发布版
+需要自己的发布密钥。注意：诊断类仍然存在于发布版的 dex
+中，只是界面不可达——没有切换按钮可以打开它们。

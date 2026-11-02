@@ -61,9 +61,28 @@
 # both activities use NoActionBar so the system title bar no longer
 # stacks on top of the MiUIX top bar, and Scaffold's bottomBar
 # gains a "Back to original interface" button to MainActivity.
+#
+# NOTE (1.1.8): usage is now ./build-manual-compose.sh [debug|release]
+# (default: debug). The UI switch button moved to the MiUIX top
+# bar, and debugging features (that button, library checks, crash
+# log) are gated on the APK being debuggable (see DebugFeatures).
+# The debug build passes --debug-mode to aapt2 link and writes
+# app-debug.apk; the release build omits it and writes
+# app-release.apk. Both are signed here with the local debug
+# keystore (testing only); a production release would need its
+# own release key, which this VM does not have.
+# The diagnostic classes are still in the release dex, but their
+# UI is unreachable: no switch button, no checks, no crash log.
 set -euo pipefail
 cd "$(dirname "$0")"
 PROJECT_DIR="$PWD"
+BUILD_TYPE="${1:-debug}"
+case "$BUILD_TYPE" in
+  debug) DEBUG_FLAG="--debug-mode"; OUT_APK="app-debug.apk" ;;
+  release) DEBUG_FLAG=""; OUT_APK="app-release.apk" ;;
+  *) echo "usage: $0 [debug|release]" >&2; exit 2 ;;
+esac
+echo "== Build type: $BUILD_TYPE -> $OUT_APK =="
 
 SDK="$HOME/Android/Sdk"
 BT="$SDK/build-tools/34.0.0"
@@ -121,8 +140,9 @@ done
   --manifest "$OUT/work/AndroidManifest.xml" \
   --java "$OUT/work/R" \
   $EXTRA \
+  $DEBUG_FLAG \
   --min-sdk-version 26 --target-sdk-version 35 \
-  --version-code 10 --version-name 1.1.7 \
+  --version-code 11 --version-name 1.1.8 \
   --auto-add-overlay \
   "$OUT/work/compiled-res/"*.zip
 
@@ -181,6 +201,6 @@ if [ ! -f $PROJECT_DIR/build-manual/debug.keystore ]; then
   "$HOME/tools/jdk17/bin/keytool" -genkeypair -v -keystore $PROJECT_DIR/build-manual/debug.keystore -alias androiddebugkey -keyalg RSA -keysize 2048 -validity 10000 -storepass android -keypass android -dname "CN=Android Debug,O=Android,C=US" >/dev/null 2>&1
 fi
 "$APKSIGNER" sign --ks $PROJECT_DIR/build-manual/debug.keystore --ks-pass pass:android --key-pass pass:android --ks-key-alias androiddebugkey "$OUT/work/aligned.apk"
-cp "$OUT/work/aligned.apk" "$PROJECT_DIR/app-debug.apk"
-"$APKSIGNER" verify "$PROJECT_DIR/app-debug.apk"
-echo "Built: $PWD/app-debug.apk"
+cp "$OUT/work/aligned.apk" "$PROJECT_DIR/$OUT_APK"
+"$APKSIGNER" verify "$PROJECT_DIR/$OUT_APK"
+echo "Built: $PWD/$OUT_APK"

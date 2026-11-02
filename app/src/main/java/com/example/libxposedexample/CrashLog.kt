@@ -16,6 +16,9 @@ object CrashLog {
     private const val NAME = "last_crash.txt"
 
     fun install(context: Context) {
+        // 1.1.8: crash recording is a debugging feature. The release
+        // APK is not debuggable, so it records nothing.
+        if (!DebugFeatures.isEnabled(context)) return
         val previous = Thread.getDefaultUncaughtExceptionHandler()
         // Only install once per process.
         if (previous is SavingHandler) return

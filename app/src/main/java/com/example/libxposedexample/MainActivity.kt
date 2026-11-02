@@ -27,6 +27,11 @@ import android.widget.TextView
  *
  * If the MiUIX activity still dies, reopening this app will show the
  * exact exception here, and that screenshot is the diagnosis.
+ *
+ * 1.1.8: this whole diagnostic section (library checks, last
+ * crash, clear button) is a debugging feature and is only shown
+ * in the debuggable build. In the release build this screen
+ * shows only the introduction and the button back to MiUIX.
  */
 class MainActivity : Activity() {
     override fun onCreate(savedInstanceState: Bundle?) {
@@ -47,7 +52,7 @@ class MainActivity : Activity() {
         }
 
         val title = TextView(this).apply {
-            text = "LibXposed Example 1.1.7"
+            text = "LibXposed Example 1.1.8"
             textSize = 22f
             setPadding(0, 0, 0, dp(24))
         }
@@ -84,13 +89,17 @@ class MainActivity : Activity() {
         }
         layout.addView(original)
 
-        val checks = TextView(this).apply {
-            text = runChecks()
-            textSize = 14f
+        // 1.1.8: debugging features, debug builds only.
+        val isDebug = DebugFeatures.isEnabled(this)
+        if (isDebug) {
+            val checks = TextView(this).apply {
+                text = runChecks()
+                textSize = 14f
+            }
+            layout.addView(checks)
         }
-        layout.addView(checks)
 
-        val lastCrash = CrashLog.read(this)
+        val lastCrash = if (isDebug) CrashLog.read(this) else null
         if (lastCrash != null) {
             val crashTitle = TextView(this).apply {
                 text = "\nLast crash (from the MiUIX screen):"

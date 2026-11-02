@@ -13,12 +13,20 @@ android {
         applicationId = "com.example.libxposedexample"
         minSdk = 26
         targetSdk = 35
-        versionCode = 10
-        versionName = "1.1.7"
+        versionCode = 11
+        versionName = "1.1.8"
     }
 
     buildTypes {
+        // Debug is debuggable: the MiUIX top-bar switch button,
+        // library checks, and crash log are shown (see
+        // DebugFeatures). Release is not debuggable, so none of
+        // that debugging UI appears.
+        debug {
+            isDebuggable = true
+        }
         release {
+            isDebuggable = false
             isMinifyEnabled = false
         }
     }
@@ -55,8 +63,9 @@ dependencies {
     compileOnly(libs.libxposed.api)
     // service is packaged: it lets the module app talk to the framework.
     implementation(libs.libxposed.service)
-    // UI: Compose + MiUIX. MainActivity is a ComponentActivity that
-    // calls setContent { MiuixTheme { Scaffold { ... } } }.
+    // UI: Compose + MiUIX. ComposeActivity is the default entry
+    // and calls setContent { MiuixTheme { Scaffold { ... } } };
+    // MainActivity is the original framework interface.
     // MiUIX 0.9.4 is a Compose Multiplatform library; its Android
     // artifact brings in the JetBrains Compose foundation/ui layers,
     // which resolve to the matching androidx.compose artifacts.
