@@ -47,7 +47,7 @@ class MainActivity : Activity() {
         }
 
         val title = TextView(this).apply {
-            text = "LibXposed Example 1.1.5"
+            text = "LibXposed Example 1.1.6"
             textSize = 22f
             setPadding(0, 0, 0, dp(24))
         }
@@ -142,6 +142,8 @@ class MainActivity : Activity() {
             "top.yukonga.miuix.kmp.theme.MiuixThemeKt",
             "top.yukonga.miuix.kmp.basic.ScaffoldKt",
             "top.yukonga.miuix.kmp.basic.CardKt",
+            "top.yukonga.miuix.kmp.shader.RuntimeShader_androidKt",
+            "top.yukonga.miuix.kmp.squircle.SquircleBackgroundKt",
         )
         val sb = StringBuilder("\nLibrary checks:\n")
         for (name in names) {

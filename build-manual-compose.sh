@@ -47,6 +47,14 @@
 # core-1.16.0; it lives in the split artifact androidx.core:
 # core-viewtree 1.0.0, which lifecycle-runtime 2.9.2 depends on.
 # 1.1.5 adds core-viewtree-1.0.0.aar / .jar to the dex.
+#
+# NOTE (1.1.6): the 1.1.5 crash log on the phone was exact:
+# NoClassDefFoundError: top.yukonga.miuix.kmp.shader.
+# RuntimeShader_androidKt at SquircleBackgroundKt.rememberSquircleBrush
+# -> Card. That class is NOT in miuix-ui/squircle/core; it lives in
+# the separate miuix-shader-android 0.9.4 artifact, a compile
+# dependency of miuix-squircle-android that was never downloaded.
+# 1.1.6 adds miuix-shader-android-0.9.4.aar / .jar to the dex.
 set -euo pipefail
 cd "$(dirname "$0")"
 PROJECT_DIR="$PWD"
@@ -98,7 +106,7 @@ open(p, 'w').write(t)
 PY
 
 EXTRA=""
-for pkg in androidx.activity androidx.activity.compose androidx.collection androidx.compose.animation androidx.compose.animation.core androidx.compose.animation.graphics androidx.compose.foundation androidx.compose.foundation.layout androidx.compose.material3.windowsizeclass androidx.compose.runtime androidx.compose.runtime.retain androidx.compose.runtime.saveable androidx.compose.ui androidx.compose.ui.geometry androidx.compose.ui.graphics androidx.compose.ui.text androidx.compose.ui.unit androidx.compose.ui.util androidx.core androidx.core.ktx androidx.core.viewtree androidx.customview androidx.customview.poolingcontainer androidx.emoji2 androidx.emoji2.widget androidx.lifecycle.runtime androidx.lifecycle.runtime.compose androidx.lifecycle.viewmodel androidx.lifecycle.viewmodel.savedstate androidx.navigationevent androidx.navigationevent.compose androidx.profileinstaller androidx.savedstate androidx.savedstate.compose androidx.startup androidx.window top.yukonga.miuix.kmp.core top.yukonga.miuix.kmp.squircle top.yukonga.miuix.kmp.ui com.materialkolor.colorutilities org.jetbrains.androidx.compose.material3.windowsizeclass; do
+for pkg in androidx.activity androidx.activity.compose androidx.collection androidx.compose.animation androidx.compose.animation.core androidx.compose.animation.graphics androidx.compose.foundation androidx.compose.foundation.layout androidx.compose.material3.windowsizeclass androidx.compose.runtime androidx.compose.runtime.retain androidx.compose.runtime.saveable androidx.compose.ui androidx.compose.ui.geometry androidx.compose.ui.graphics androidx.compose.ui.text androidx.compose.ui.unit androidx.compose.ui.util androidx.core androidx.core.ktx androidx.core.viewtree androidx.customview androidx.customview.poolingcontainer androidx.emoji2 androidx.emoji2.widget androidx.lifecycle.runtime androidx.lifecycle.runtime.compose androidx.lifecycle.viewmodel androidx.lifecycle.viewmodel.savedstate androidx.navigationevent androidx.navigationevent.compose androidx.profileinstaller androidx.savedstate androidx.savedstate.compose androidx.startup androidx.window top.yukonga.miuix.kmp.core top.yukonga.miuix.kmp.shader top.yukonga.miuix.kmp.squircle top.yukonga.miuix.kmp.ui com.materialkolor.colorutilities org.jetbrains.androidx.compose.material3.windowsizeclass; do
   EXTRA="$EXTRA --extra-packages $pkg"
 done
 
@@ -108,7 +116,7 @@ done
   --java "$OUT/work/R" \
   $EXTRA \
   --min-sdk-version 26 --target-sdk-version 35 \
-  --version-code 8 --version-name 1.1.5 \
+  --version-code 9 --version-name 1.1.6 \
   --auto-add-overlay \
   "$OUT/work/compiled-res/"*.zip
 
