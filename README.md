@@ -189,6 +189,10 @@ you build with Gradle, the service classes are included as usual.
   (`FLAG_ACTIVITY_REORDER_TO_FRONT`) instead of creating a new
   one on every tap, so the back stack never grows past the two
   interfaces and backing out no longer needs one press per switch.
+- **1.1.11** — launcher (desktop) icon changed to the
+  user-provided image, shipped as a 192x192
+  `mipmap-xxxhdpi/ic_launcher.png` and referenced as the app's
+  icon and round icon in the manifest.
 
 ## Telegram forwarding
 

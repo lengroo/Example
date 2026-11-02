@@ -86,6 +86,15 @@
 # FLAG_ACTIVITY_REORDER_TO_FRONT, so switching reuses the
 # existing interface activity instead of stacking a new one
 # on every tap (which used to need one back press per switch).
+#
+# NOTE (1.1.11): launcher icon changed to the user-provided
+# image: app/src/main/res/mipmap-xxxhdpi/ic_launcher.png
+# (192x192, centre-cropped square from the 828x800 source),
+# referenced as android:icon / android:roundIcon in the
+# manifest. Only the xxxhdpi density is shipped; Android
+# downscales it for lower densities. Note: this PNG is a
+# binary, so the API push tool cannot sync it — it is uploaded
+# via the GitHub web UI, separately from the text files.
 set -euo pipefail
 cd "$(dirname "$0")"
 PROJECT_DIR="$PWD"
@@ -155,7 +164,7 @@ done
   $EXTRA \
   $DEBUG_FLAG \
   --min-sdk-version 26 --target-sdk-version 35 \
-  --version-code 13 --version-name 1.1.10 \
+  --version-code 14 --version-name 1.1.11 \
   --auto-add-overlay \
   "$OUT/work/compiled-res/"*.zip
 

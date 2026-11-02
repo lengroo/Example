@@ -179,6 +179,9 @@ service AAR。Hook 本身并不使用 service API，所以生成的 APK
   （`FLAG_ACTIVITY_REORDER_TO_FRONT`），而不是每次点击都
   创建一个新的，这样返回栈永远不会超过两个界面，返回时
   也不再需要按切换次数多次返回。
+- **1.1.11** —— 启动器（桌面）图标更换为用户提供的图片，
+  以 192x192 的 `mipmap-xxxhdpi/ic_launcher.png` 提供，
+  并在 manifest 中设为应用图标和圆形图标。
 
 ## Telegram 转发
 

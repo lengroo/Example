@@ -9,6 +9,8 @@
     <application
         android:label="@string/app_name"
         android:description="@string/module_description"
+        android:icon="@mipmap/ic_launcher"
+        android:roundIcon="@mipmap/ic_launcher"
         android:theme="@android:style/Theme.DeviceDefault.Light">
         <!-- 1.1.7: the MiUIX interface is now the default entry.
              The system title bar is hidden (NoActionBar) on both
