@@ -33,14 +33,23 @@ class MainActivity : Activity() {
         super.onCreate(savedInstanceState)
         CrashLog.install(this)
 
+        // 1.1.4 title fix: the old code used raw pixels (48, 64, ...),
+        // which is only ~16-21dp on a high-density screen, so text
+        // could start underneath the title/action bar. Convert to
+        // dp properly and give a generous top margin, like the 1.0.1
+        // fix did (24dp sides, 32dp top), plus extra clearance here.
+        val density = resources.displayMetrics.density
+        fun dp(value: Int): Int = (value * density + 0.5f).toInt()
+
         val layout = LinearLayout(this).apply {
             orientation = LinearLayout.VERTICAL
-            setPadding(48, 64, 48, 48)
+            setPadding(dp(24), dp(72), dp(24), dp(24))
         }
 
         val title = TextView(this).apply {
-            text = "LibXposed Example 1.1.3"
+            text = "LibXposed Example 1.1.4"
             textSize = 22f
+            setPadding(0, 0, 0, dp(24))
         }
         layout.addView(title)
 
@@ -50,8 +59,30 @@ class MainActivity : Activity() {
                 "Activity in that app resumes. It does not change " +
                 "any app behaviour."
             textSize = 16f
+            setPadding(0, 0, 0, dp(24))
         }
         layout.addView(intro)
+
+        // Verbatim contents from the 1.0 era interface, restored here
+        // as well as in the MiUIX screen.
+        val original = TextView(this).apply {
+            text = "From the 1.0 interface:\n\n" +
+                "LibXposed Example\n\n" +
+                "This is a minimal LSPosed / Vector module.\n\n" +
+                "1. Install this APK on a device with LSPosed " +
+                "(API 101+) or Vector (API 102).\n" +
+                "2. Enable \"LibXposed Example\" in the LSPosed " +
+                "Manager and pick a scope app.\n" +
+                "3. Reboot / force-stop the scoped app, then launch it.\n" +
+                "4. Watch logcat for the LibXposedExample tag:\n" +
+                "   adb logcat -s LibXposedExample\n\n" +
+                "What it does: it only logs when a scoped app loads and " +
+                "when an Activity in that app resumes. It does not change " +
+                "any app behaviour, return values, or arguments."
+            textSize = 16f
+            setPadding(0, 0, 0, dp(24))
+        }
+        layout.addView(original)
 
         val checks = TextView(this).apply {
             text = runChecks()

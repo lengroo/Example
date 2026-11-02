@@ -100,7 +100,7 @@ done
   --java "$OUT/work/R" \
   $EXTRA \
   --min-sdk-version 26 --target-sdk-version 35 \
-  --version-code 6 --version-name 1.1.3 \
+  --version-code 7 --version-name 1.1.4 \
   --auto-add-overlay \
   "$OUT/work/compiled-res/"*.zip
 
