@@ -1,0 +1,91 @@
+# Forward a published GitHub release to a Telegram channel.
+#
+# Trigger: when a release is published on this repo (the normal
+# v1.1.x release flow), this workflow downloads the release APK
+# and sends it to Telegram with the Telegram Bot API.
+#
+# Secrets (repo Settings > Secrets and variables > Actions):
+#   TELEGRAM_BOT_TOKEN — the bot token. Never put it in this file.
+#   TELEGRAM_CHAT_ID   — the destination channel/chat ID.
+#
+# The bot token and chat ID are intentionally NOT in this file:
+# anyone who can read the repo could otherwise use the bot.
+# If either secret is missing, the workflow fails with a clear
+# message instead of sending anything.
+#
+# Manual test: Actions > "Forward release to Telegram" > Run
+# workflow, with the tag of an existing release (e.g. v1.1.10).
+# That re-sends that release's app-debug.apk.
+
+name: Forward release to Telegram
+
+on:
+  release:
+    types: [published]
+  workflow_dispatch:
+    inputs:
+      tag:
+        description: "Release tag to forward (e.g. v1.1.10)"
+        required: true
+        type: string
+
+permissions:
+  contents: read
+
+jobs:
+  forward:
+    runs-on: ubuntu-latest
+    steps:
+      - name: Resolve release tag
+        id: release
+        env:
+          EVENT_TAG: ${{ github.event.release.tag_name }}
+          INPUT_TAG: ${{ inputs.tag }}
+        run: |
+          TAG="${EVENT_TAG:-$INPUT_TAG}"
+          if [ -z "$TAG" ]; then
+            echo "No release tag found." >&2
+            exit 1
+          fi
+          echo "tag=$TAG" >> "$GITHUB_OUTPUT"
+          echo "Release tag: $TAG"
+
+      - name: Check Telegram secrets are set
+        env:
+          BOT_TOKEN: ${{ secrets.TELEGRAM_BOT_TOKEN }}
+          CHAT_ID: ${{ secrets.TELEGRAM_CHAT_ID }}
+        run: |
+          if [ -z "$BOT_TOKEN" ]; then
+            echo "Missing secret: TELEGRAM_BOT_TOKEN. Add it in repo Settings > Secrets and variables > Actions." >&2
+            exit 1
+          fi
+          if [ -z "$CHAT_ID" ]; then
+            echo "Missing secret: TELEGRAM_CHAT_ID. Add it in repo Settings > Secrets and variables > Actions." >&2
+            exit 1
+          fi
+          echo "Telegram secrets are set."
+
+      - name: Download the release APK
+        env:
+          TAG: ${{ steps.release.outputs.tag }}
+        run: |
+          curl -sSL -o app-debug.apk \
+            "https://github.com/${{ github.repository }}/releases/download/${TAG}/app-debug.apk"
+          ls -lh app-debug.apk
+          file app-debug.apk
+
+      - name: Send APK to Telegram
+        env:
+          BOT_TOKEN: ${{ secrets.TELEGRAM_BOT_TOKEN }}
+          CHAT_ID: ${{ secrets.TELEGRAM_CHAT_ID }}
+          TAG: ${{ steps.release.outputs.tag }}
+          REPO: ${{ github.repository }}
+        run: |
+          CAPTION="LibXposed Example ${TAG}
+          Release: https://github.com/${REPO}/releases/tag/${TAG}
+          Asset: app-debug.apk (debug build)"
+          curl -sSL -X POST \
+            "https://api.telegram.org/bot${BOT_TOKEN}/sendDocument" \
+            -F "chat_id=${CHAT_ID}" \
+            -F "document=@app-debug.apk" \
+            -F "caption=${CAPTION}"
