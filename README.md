@@ -4,93 +4,83 @@
 
 A minimal, modern libxposed module (API 101/102) for LSPosed / Vector.
 
-The landing UI is built with Compose + MiUIX
-(`top.yukonga.miuix.kmp:miuix-ui-android:0.9.4`, see
-https://github.com/compose-miuix-ui/miuix): `MainActivity` is a
-`ComponentActivity` that calls `setContent { MiuixTheme { Scaffold { ... } } }`,
-with a `SmallTopAppBar` and a `LazyColumn` of `Card`s. The hook itself
-(`ExampleModule`) is unchanged and does not use Compose or MiUIX.
+It does one thing and does it visibly: it logs, to logcat, when a
+scoped app loads and when an Activity in that app resumes. It changes
+no app behaviour, no arguments, and no return values.
 
-## What it does
+## The app has two interfaces
 
-Nothing destructive, and nothing that changes an app's behaviour:
+Opening the app goes straight to the **MiUIX interface**
+(`ComposeActivity`, a `ComponentActivity` built with Compose +
+MiUIX `0.9.4`, see https://github.com/compose-miuix-ui/miuix).
+It shows, in MiUIX `Card`s:
 
-- When the module loads, it logs to logcat under the tag `LibXposedExample`.
+- **About** — what the module is.
+- **Install and try** — install, enable, and logcat steps.
+- **What it does** — the logging-only promise.
+- **From the 1.0 interface** — the full text of the original
+  framework interface, kept verbatim.
+
+A fixed button at the bottom, **"Back to original interface"**,
+switches to the **original interface** (`MainActivity`). That screen
+is deliberately built with framework classes only — no Compose, no
+MiUIX, no androidx imports — so it still works even if the MiUIX
+screen fails to start. It shows:
+
+- The same introduction and 1.0-era text.
+- **Library checks** — whether each key Compose / MiUIX / androidx
+  class actually loads (`Class.forName`), reported as `OK` / `FAIL`
+  instead of crashing.
+- **Last crash** — if the MiUIX screen ever died, the exact stack
+  trace is saved by `CrashLog` and shown here on the next launch,
+  with a button to clear it.
+- **"Open MiUIX interface"** — back to the MiUIX screen.
+
+The system title bar is hidden on both screens (`NoActionBar`), so
+each screen shows only its own title.
+
+## What the hook does
+
+- When the module loads, it logs under the tag `LibXposedExample`.
 - When a scoped app becomes ready, it logs the package name.
-- It hooks `android.app.Activity.onResume()` in the scoped app and logs
-  each resumed Activity's class name, then calls the original method
-  unchanged. No arguments are modified and no return value is replaced.
+- It hooks `android.app.Activity.onResume()` in the scoped app,
+  logs each resumed Activity's class name and package, then calls
+  the original method unchanged.
 
-Scope is intentionally empty (`META-INF/xposed/scope.list` contains only
-a comment): pick the target app(s) yourself in the LSPosed Manager.
-That keeps the example generic and avoids targeting any specific
-third-party app.
+Scope is intentionally empty (`META-INF/xposed/scope.list`
+contains only a comment): pick the target app(s) yourself in the
+LSPosed Manager. That keeps the example generic and avoids
+targeting any specific third-party app.
 
 ## How it works (the modern API, verified against api-102.0.0)
 
 - Entry class: `com.example.libxposedexample.ExampleModule`
-  extends `io.github.libxposed.api.XposedModule` with a public no-arg
-  constructor. The framework calls `attachFramework()` itself.
+  extends `io.github.libxposed.api.XposedModule` with a public
+  no-arg constructor. The framework calls `attachFramework()`
+  itself.
 - Lifecycle: `onModuleLoaded(ModuleLoadedParam)`,
   `onPackageReady(PackageReadyParam)` (guarded by `isFirstPackage`).
 - Hook: `hook(method).intercept { chain -> ...; chain.proceed() }`.
   `Chain.thisObject` is the receiver, `Chain.proceed()` runs the
-  original method, `Chain.proceed(newArgs)` would run it with new args.
+  original method, `Chain.proceed(newArgs)` would run it with new
+  arguments.
 - Discovery (no legacy meta-data in the manifest):
-  - `src/main/resources/META-INF/xposed/java_init.list` — entry class name
+  - `src/main/resources/META-INF/xposed/java_init.list` — entry class
   - `src/main/resources/META-INF/xposed/module.prop` —
-    `minApiVersion=101`, `targetApiVersion=102`, `staticScope=false`,
-    `exceptionMode=protective`
+    `minApiVersion=101`, `targetApiVersion=102`,
+    `staticScope=false`, `exceptionMode=protective`
   - `src/main/resources/META-INF/xposed/scope.list` — default scope
 - Dependencies: `io.github.libxposed:api:102.0.0` is `compileOnly`
   (the framework provides it at runtime inside the hooked process).
   `io.github.libxposed:service:102.0.0` is `implementation` in the
   Gradle build (it supplies the framework-communication provider);
-  the manual build below notes a d8 issue with that AAR, see below.
-
-## Build (normal route)
-
-```sh
-./gradlew :app:assembleDebug
-# app/build/outputs/apk/debug/app-debug.apk
-```
-
-Requires JDK 17, Android SDK 35, and a working Gradle daemon.
-
-## Build (manual route, used for the APK attached here)
-
-In the VM this was built in, the Gradle daemon could not communicate
-with its client (even a trivial Gradle project failed the same way),
-so the APK was built step by step instead:
-
-```sh
-./build-manual-compose.sh
-# app-debug.apk
-```
-
-That script runs: `aapt2 compile/link` (app + library AAR resources,
-generating R classes) → `kotlinc` with the Compose compiler plugin →
-`javac` for the generated R classes → `d8` (standalone R8/D8 8.11.32,
-because d8 from build-tools 34.0.0 crashes on several current
-androidx classes) → zip assembly (adding `classes*.dex` and
-`META-INF/xposed/*`) → `zipalign` → `apksigner` (debug key).
-It needs the library jars in `build-manual-compose/jars/` (classes.jar
-extracted from the MiUIX / Compose / activity AARs, plus
-lifecycle-common and kotlinx-coroutines); that directory is a local
-build cache and is not part of the source tree.
-
-Note on the service AAR: d8 from build-tools 34.0.0 fails on
-`io.github.libxposed.service.HookedTarget$State` with a
-NullPointerException, so the manual build bundles only the module's
-own classes, the Compose/MiUIX/activity libraries, and kotlin-stdlib,
-not the service AAR. The hook itself does not use the service API,
-so the resulting APK is still a valid module; if you build with
-Gradle, the service classes are included as usual.
+  the manual build below notes a d8 issue with that AAR.
 
 ## Install and try
 
 1. Install on a device with LSPosed (API 101+) or Vector (API 102).
    The APK is signed with a debug key, so it is for testing only.
+   Releases are on the [Releases](https://github.com/lengroo/Example/releases) page.
 2. In LSPosed Manager, enable "LibXposed Example" and choose a scope app.
 3. Force-stop and relaunch the scoped app (or reboot).
 4. Observe logcat:
@@ -104,12 +94,85 @@ If you see nothing, check that the module is enabled, the scope
 includes the app you launched, and that the app was actually
 restarted after enabling.
 
+## Build (normal route)
+
+```sh
+./gradlew :app:assembleDebug
+# app/build/outputs/apk/debug/app-debug.apk
+```
+
+Requires JDK 17, Android SDK 35, and a working Gradle daemon.
+
+## Build (manual route, used for the released APKs)
+
+In the VM the releases were built in, the Gradle daemon could not
+communicate with its client (even a trivial Gradle project failed
+the same way), so the APKs were built step by step instead:
+
+```sh
+./build-manual-compose.sh
+# app-debug.apk
+```
+
+That script runs: `aapt2 compile/link` (app + library AAR
+resources, generating R classes) → `kotlinc` with the Compose
+compiler plugin → `javac` for the generated R classes → `d8`
+(standalone R8/D8 8.11.32, because d8 from build-tools 34.0.0
+crashes on several current androidx classes) → zip assembly
+(adding `classes*.dex` and `META-INF/xposed/*`) → `zipalign` →
+`apksigner` (debug key).
+
+It needs the library jars in `build-manual-compose/jars/`
+(classes.jar extracted from the MiUIX / Compose / activity AARs,
+plus lifecycle-common and kotlinx-coroutines); that directory is
+a local build cache and is not part of the source tree.
+
+Two lessons from that route are recorded in the build script and
+worth knowing if you rebuild by hand:
+
+- **Generated R classes must be dexed.** They live apart from the
+  app classes, and library code such as `ViewCompat` references
+  `androidx.core.R$id` as a non-final field, so a build that drops
+  them fails at runtime with `NoClassDefFoundError`.
+- **Split artifacts must be included, not just their parent.**
+  `androidx.core.viewtree.ViewTree` is not in `core-1.16.0` — it is
+  in `core-viewtree 1.0.0` — and MiUIX's
+  `RuntimeShader_androidKt` is not in `miuix-ui` — it is in
+  `miuix-shader-android 0.9.4`, a dependency of `miuix-squircle`.
+  Missing either one crashes the MiUIX screen on first use.
+
+Note on the service AAR: d8 from build-tools 34.0.0 fails on
+`io.github.libxposed.service.HookedTarget$State` with a
+NullPointerException, so the manual build bundles only the module's
+own classes, the Compose/MiUIX/activity libraries, and
+kotlin-stdlib, not the service AAR. The hook itself does not use
+the service API, so the resulting APK is still a valid module; if
+you build with Gradle, the service classes are included as usual.
+
 ## Files
 
 - `app/src/main/java/com/example/libxposedexample/ExampleModule.kt`
   — the hook entry point
+- `app/src/main/java/com/example/libxposedexample/ComposeActivity.kt`
+  — the MiUIX interface (default entry)
 - `app/src/main/java/com/example/libxposedexample/MainActivity.kt`
-  — a plain landing screen explaining the module
+  — the original framework interface: library checks, crash log,
+  and the button back to MiUIX
+- `app/src/main/java/com/example/libxposedexample/CrashLog.kt`
+  — saves uncaught MiUIX crashes for the original interface to show
 - `app/src/main/AndroidManifest.xml`
 - `app/src/main/resources/META-INF/xposed/{module.prop,java_init.list,scope.list}`
 - `app/build.gradle.kts`, `gradle/libs.versions.toml`, `build-manual-compose.sh`
+
+## Version notes
+
+- **1.0** — original framework interface.
+- **1.1.0–1.1.1** — first MiUIX refactor; crashed on launch on some
+  devices because real runtime classes were missing from the dex.
+- **1.1.2–1.1.6** — diagnostic split (framework launcher + MiUIX
+  activity), then one missing class at a time, each diagnosed from
+  the crash log shown in the launcher: `FastSafeIterableMap`,
+  `ViewTree`, then MiUIX's `RuntimeShader_androidKt`.
+- **1.1.7** — MiUIX is the default entry, the system title bar is
+  hidden, and a bottom button switches back to the original
+  interface.

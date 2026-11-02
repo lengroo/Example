@@ -4,22 +4,47 @@
 
 一个最小化的、现代的 libxposed 模块（API 101/102），适用于 LSPosed / Vector。
 
-启动界面使用 Compose + MiUIX 构建
-（`top.yukonga.miuix.kmp:miuix-ui-android:0.9.4`，见
-https://github.com/compose-miuix-ui/miuix）：`MainActivity` 是一个
-`ComponentActivity`，调用 `setContent { MiuixTheme { Scaffold { ... } } }`，
-包含一个 `SmallTopAppBar` 和一个由 `Card` 组成的 `LazyColumn`。Hook 本身
-（`ExampleModule`）没有变化，也不使用 Compose 或 MiUIX。
+它只做一件事，而且做得很直观：向 logcat 记录某个已选定作用域
+应用的加载，以及该应用中某个 Activity 的恢复。它不改变任何
+应用行为，不修改任何参数，也不替换任何返回值。
 
-## 它能做什么
+## 应用有两个界面
 
-没有任何破坏性行为，也不会改变任何应用的行为：
+打开应用会直接进入 **MiUIX 界面**
+（`ComposeActivity`，一个用 Compose + MiUIX `0.9.4` 构建的
+`ComponentActivity`，见 https://github.com/compose-miuix-ui/miuix）。
+它用 MiUIX 的 `Card` 展示：
+
+- **About** —— 模块简介。
+- **Install and try** —— 安装、启用和查看日志的步骤。
+- **What it does** —— 只记录日志的承诺。
+- **From the 1.0 interface** —— 原始框架界面的完整文本，
+  原样保留。
+
+底部有一个固定按钮 **"Back to original interface"**（返回原始界面），
+点击可切换到**原始界面**（`MainActivity`）。这个界面是特意只用
+框架类构建的——不用 Compose、不用 MiUIX、不用 androidx——所以
+即使 MiUIX 界面无法启动，它仍然可以正常工作。它展示：
+
+- 同样的简介和 1.0 时代的文本。
+- **Library checks（依赖库检查）** —— 每个关键的 Compose /
+  MiUIX / androidx 类是否真的能加载（用 `Class.forName` 检查），
+  显示为 `OK` / `FAIL`，而不是直接崩溃。
+- **Last crash（上次崩溃）** —— 如果 MiUIX 界面曾经崩溃，
+  `CrashLog` 会保存准确的堆栈信息，下次启动时在这里显示，
+  并提供清除按钮。
+- **"Open MiUIX interface"** —— 返回 MiUIX 界面。
+
+两个界面都隐藏了系统标题栏（`NoActionBar`），所以每个界面
+只显示自己的标题。
+
+## Hook 能做什么
 
 - 模块加载时，会以 `LibXposedExample` 标签向 logcat 输出日志。
 - 当某个已选定作用域的应用就绪时，会记录该应用的包名。
-- 它会 Hook 已选定作用域应用中的 `android.app.Activity.onResume()`，
-  并记录每次恢复的 Activity 的类名，然后原样调用原始方法。
-  不修改任何参数，也不替换任何返回值。
+- 它会 Hook 已选定作用域应用中的
+  `android.app.Activity.onResume()`，记录每次恢复的 Activity
+  的类名和包名，然后原样调用原始方法。
 
 作用域被有意留空（`META-INF/xposed/scope.list` 中只有注释）：
 请自己在 LSPosed Manager 中选择目标应用。
@@ -45,7 +70,24 @@ https://github.com/compose-miuix-ui/miuix）：`MainActivity` 是一个
   （框架会在被 Hook 的进程运行时提供它）。
   `io.github.libxposed:service:102.0.0` 在 Gradle 构建中是
   `implementation`（它提供与框架通信的 Provider）；
-  下文的手动构建说明中提到了该 AAR 的 d8 问题，见下文。
+  下文的手动构建说明中提到了该 AAR 的 d8 问题。
+
+## 安装与试用
+
+1. 在装有 LSPosed（API 101+）或 Vector（API 102）的设备上安装。
+   该 APK 使用调试密钥签名，仅供测试使用。
+   发布版本见 [Releases](https://github.com/lengroo/Example/releases) 页面。
+2. 在 LSPosed Manager 中启用“LibXposed Example”并选择一个作用域应用。
+3. 强制停止并重新启动该作用域应用（或重启设备）。
+4. 查看 logcat：
+
+```sh
+adb logcat -s LibXposedExample
+```
+
+你应该能看到“Package ready: …”和“Activity resumed: …”这样的日志。
+如果什么都没看到，请检查模块是否已启用、作用域是否包含你启动的
+应用，以及该应用是否在启用后确实被重启过。
 
 ## 构建（常规方式）
 
@@ -56,9 +98,9 @@ https://github.com/compose-miuix-ui/miuix）：`MainActivity` 是一个
 
 需要 JDK 17、Android SDK 35，以及一个可正常工作的 Gradle 守护进程。
 
-## 构建（手动方式，本仓库附带 APK 所用的方式）
+## 构建（手动方式，发布版 APK 所用的方式）
 
-在构建该 APK 的虚拟机中，Gradle 守护进程无法与其客户端通信
+在构建发布版 APK 的虚拟机中，Gradle 守护进程无法与其客户端通信
 （即使是一个极小的 Gradle 项目也会同样失败），
 因此改为一步一步手动构建 APK：
 
@@ -73,10 +115,24 @@ https://github.com/compose-miuix-ui/miuix）：`MainActivity` 是一个
 build-tools 34.0.0 的 d8 在处理多个较新的 androidx 类时会崩溃）→
 zip 组装（加入 `classes*.dex` 和 `META-INF/xposed/*`）→
 `zipalign` → `apksigner`（调试密钥）。
+
 它需要 `build-manual-compose/jars/` 中的依赖库 jar（从 MiUIX /
 Compose / activity AAR 中提取的 classes.jar，以及
 lifecycle-common 和 kotlinx-coroutines）；该目录是本地构建缓存，
 不属于源码树。
+
+手动构建有两个经验教训，记录在构建脚本中，手动重建时值得了解：
+
+- **生成的 R 类必须打包进 dex。** 它们与应用类分开存放，
+  而 `ViewCompat` 这样的库代码会把 `androidx.core.R$id`
+  当作非 final 字段引用，所以丢掉它们的构建会在运行时以
+  `NoClassDefFoundError` 失败。
+- **拆分出来的产物必须一并包含，不能只包含父产物。**
+  `androidx.core.viewtree.ViewTree` 不在 `core-1.16.0` 里——它在
+  `core-viewtree 1.0.0` 里；MiUIX 的
+  `RuntimeShader_androidKt` 也不在 `miuix-ui` 里——它在
+  `miuix-shader-android 0.9.4` 里，那是 `miuix-squircle` 的依赖。
+  缺少其中任何一个，MiUIX 界面一开始使用就会崩溃。
 
 关于 service AAR 的说明：build-tools 34.0.0 的 d8 在处理
 `io.github.libxposed.service.HookedTarget$State` 时会因
@@ -86,28 +142,28 @@ service AAR。Hook 本身并不使用 service API，所以生成的 APK
 仍然是一个有效的模块；如果你用 Gradle 构建，service 类会像
 往常一样被包含进来。
 
-## 安装与试用
-
-1. 在装有 LSPosed（API 101+）或 Vector（API 102）的设备上安装。
-   该 APK 使用调试密钥签名，仅供测试使用。
-2. 在 LSPosed Manager 中启用“LibXposed Example”并选择一个作用域应用。
-3. 强制停止并重新启动该作用域应用（或重启设备）。
-4. 查看 logcat：
-
-```sh
-adb logcat -s LibXposedExample
-```
-
-你应该能看到“Package ready: …”和“Activity resumed: …”这样的日志。
-如果什么都没看到，请检查模块是否已启用、作用域是否包含你启动的
-应用，以及该应用是否在启用后确实被重启过。
-
 ## 文件
 
 - `app/src/main/java/com/example/libxposedexample/ExampleModule.kt`
   —— Hook 入口
+- `app/src/main/java/com/example/libxposedexample/ComposeActivity.kt`
+  —— MiUIX 界面（默认入口）
 - `app/src/main/java/com/example/libxposedexample/MainActivity.kt`
-  —— 一个简单的启动说明页面
+  —— 原始框架界面：依赖库检查、崩溃日志，以及返回 MiUIX 的按钮
+- `app/src/main/java/com/example/libxposedexample/CrashLog.kt`
+  —— 保存未捕获的 MiUIX 崩溃，供原始界面展示
 - `app/src/main/AndroidManifest.xml`
 - `app/src/main/resources/META-INF/xposed/{module.prop,java_init.list,scope.list}`
 - `app/build.gradle.kts`、`gradle/libs.versions.toml`、`build-manual-compose.sh`
+
+## 版本说明
+
+- **1.0** —— 原始框架界面。
+- **1.1.0–1.1.1** —— 首次 MiUIX 重构；在某些设备上启动即崩溃，
+  因为 dex 中缺少真正的运行时类。
+- **1.1.2–1.1.6** —— 诊断拆分（框架启动器 + MiUIX Activity），
+  然后根据启动器中显示的崩溃日志，一次补上一个缺失的类：
+  `FastSafeIterableMap`、`ViewTree`，再到 MiUIX 的
+  `RuntimeShader_androidKt`。
+- **1.1.7** —— MiUIX 成为默认入口，隐藏系统标题栏，
+  底部按钮可切换回原始界面。
