@@ -73,6 +73,14 @@
 # own release key, which this VM does not have.
 # The diagnostic classes are still in the release dex, but their
 # UI is unreachable: no switch button, no checks, no crash log.
+#
+# NOTE (1.1.9): 1.1.4's extra 32dp top padding + 16dp spacer are
+# removed from ComposeActivity: Scaffold's paddingValues alone
+# place content below the top bar, and the extras left a large
+# blank gap below the title and above "About" in 1.1.8.
+# Also, from 1.1.9 on, only the debug APK is packaged and
+# released, per the user's decision; the release build type
+# above is kept in the script for completeness but is not used.
 set -euo pipefail
 cd "$(dirname "$0")"
 PROJECT_DIR="$PWD"
@@ -142,7 +150,7 @@ done
   $EXTRA \
   $DEBUG_FLAG \
   --min-sdk-version 26 --target-sdk-version 35 \
-  --version-code 11 --version-name 1.1.8 \
+  --version-code 12 --version-name 1.1.9 \
   --auto-add-overlay \
   "$OUT/work/compiled-res/"*.zip
 

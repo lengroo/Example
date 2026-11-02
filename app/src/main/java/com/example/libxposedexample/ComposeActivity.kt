@@ -8,10 +8,8 @@ import androidx.activity.compose.setContent
 import androidx.compose.foundation.isSystemInDarkTheme
 import androidx.compose.foundation.layout.Arrangement
 import androidx.compose.foundation.layout.PaddingValues
-import androidx.compose.foundation.layout.Spacer
 import androidx.compose.foundation.layout.fillMaxSize
 import androidx.compose.foundation.layout.fillMaxWidth
-import androidx.compose.foundation.layout.height
 import androidx.compose.foundation.layout.padding
 import androidx.compose.foundation.lazy.LazyColumn
 import androidx.compose.runtime.Composable
@@ -105,26 +103,24 @@ class ComposeActivity : ComponentActivity() {
 }
 
 /**
- * 1.1.4 title fix: the first content below SmallTopAppBar was
- * obscured by the title on the user's phone, so the content is now
- * pushed well down on purpose. Scaffold's paddingValues are kept,
- * plus an extra 32dp on top, plus a 16dp spacer as the first item,
- * so the first SmallTitle can never sit underneath the top bar,
- * even if paddingValues ever reports a smaller top inset.
+ * 1.1.9 spacing fix: 1.1.4 added an extra 32dp on top plus a 16dp
+ * spacer as the first item, on top of Scaffold's paddingValues.
+ * That was too much — the 1.1.8 screenshots showed a large blank
+ * gap below the title bar and above "About". Scaffold's
+ * paddingValues already place the content below SmallTopAppBar,
+ * so the extras are removed: content now starts 12dp below the
+ * top bar (the LazyColumn contentPadding), with no extra top
+ * padding and no spacer item.
  */
 @Composable
 private fun ExampleScreen(paddingValues: PaddingValues) {
     LazyColumn(
         modifier = Modifier
             .fillMaxSize()
-            .padding(paddingValues)
-            .padding(top = 32.dp),
+            .padding(paddingValues),
         contentPadding = PaddingValues(horizontal = 12.dp, vertical = 12.dp),
         verticalArrangement = Arrangement.spacedBy(12.dp),
     ) {
-        item {
-            Spacer(modifier = Modifier.height(16.dp))
-        }
         item {
             SmallTitle(text = "About")
         }

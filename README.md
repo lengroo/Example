@@ -180,6 +180,11 @@ you build with Gradle, the service classes are included as usual.
   interface.
 - **1.1.8** — the switch button moves to the top bar, and both
   a debug and a release APK are published (see below).
+- **1.1.9** — the excess blank space below the title bar is
+  removed: the 1.1.4 extra 32dp top padding and 16dp spacer are
+  dropped, leaving only Scaffold's own top-bar padding plus
+  12dp content padding above "About". From 1.1.9 on, only the
+  debug APK is packaged and released.
 
 ## Debug and release builds
 
@@ -190,10 +195,12 @@ debuggable (`DebugFeatures`, checked against
 - **Debug** (`app-debug.apk`, `aapt2 --debug-mode`, and Gradle's
   debug build type): the MiUIX top bar shows the "Original"
   switch button, the original interface shows library checks and
-  the last crash, and `CrashLog` records crashes.
+  the last crash, and `CrashLog` records crashes. This is the
+  only variant packaged and released from 1.1.9 on.
 - **Release** (`app-release.apk`, no `--debug-mode`, and Gradle's
   release build type): none of that debugging UI appears. The
-  MiUIX interface is clean, with no switch button.
+  MiUIX interface is clean, with no switch button. Not packaged
+  from 1.1.9 on, per the user's decision.
 
 Both are signed here with the local debug keystore (testing only);
 a production release would need its own release key. Note that
