@@ -185,6 +185,10 @@ you build with Gradle, the service classes are included as usual.
   dropped, leaving only Scaffold's own top-bar padding plus
   12dp content padding above "About". From 1.1.9 on, only the
   debug APK is packaged and released.
+- **1.1.10** — switching interfaces reuses the existing activity
+  (`FLAG_ACTIVITY_REORDER_TO_FRONT`) instead of creating a new
+  one on every tap, so the back stack never grows past the two
+  interfaces and backing out no longer needs one press per switch.
 
 ## Debug and release builds
 

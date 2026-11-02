@@ -52,7 +52,7 @@ class MainActivity : Activity() {
         }
 
         val title = TextView(this).apply {
-            text = "LibXposed Example 1.1.9"
+            text = "LibXposed Example 1.1.10"
             textSize = 22f
             setPadding(0, 0, 0, dp(24))
         }
@@ -124,7 +124,16 @@ class MainActivity : Activity() {
         val openButton = Button(this).apply {
             text = "Open MiUIX interface"
             setOnClickListener {
-                startActivity(Intent(this@MainActivity, ComposeActivity::class.java))
+                // 1.1.10: same reuse fix as ComposeActivity — bring
+                // the existing MiUIX activity to the front instead
+                // of stacking a new one on every switch.
+                val intent = Intent(
+                    this@MainActivity,
+                    ComposeActivity::class.java,
+                ).apply {
+                    flags = Intent.FLAG_ACTIVITY_REORDER_TO_FRONT
+                }
+                startActivity(intent)
             }
         }
         layout.addView(openButton)

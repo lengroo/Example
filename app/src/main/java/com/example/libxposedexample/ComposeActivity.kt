@@ -68,12 +68,25 @@ class ComposeActivity : ComponentActivity() {
                                         TextButton(
                                             text = "Original",
                                             onClick = {
-                                                context.startActivity(
-                                                    Intent(
-                                                        context,
-                                                        MainActivity::class.java,
-                                                    ),
-                                                )
+                                                // 1.1.10: reuse, don't stack.
+                                                // Without this flag, every
+                                                // switch created a new
+                                                // MainActivity, so backing
+                                                // out needed one press per
+                                                // switch. REORDER_TO_FRONT
+                                                // brings the existing
+                                                // instance forward if it
+                                                // is already in the task,
+                                                // so the stack never grows
+                                                // past the two interfaces.
+                                                val intent = Intent(
+                                                    context,
+                                                    MainActivity::class.java,
+                                                ).apply {
+                                                    flags =
+                                                        Intent.FLAG_ACTIVITY_REORDER_TO_FRONT
+                                                }
+                                                context.startActivity(intent)
                                             },
                                         )
                                     }

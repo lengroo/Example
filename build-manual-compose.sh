@@ -81,6 +81,11 @@
 # Also, from 1.1.9 on, only the debug APK is packaged and
 # released, per the user's decision; the release build type
 # above is kept in the script for completeness but is not used.
+#
+# NOTE (1.1.10): both switch buttons now use
+# FLAG_ACTIVITY_REORDER_TO_FRONT, so switching reuses the
+# existing interface activity instead of stacking a new one
+# on every tap (which used to need one back press per switch).
 set -euo pipefail
 cd "$(dirname "$0")"
 PROJECT_DIR="$PWD"
@@ -150,7 +155,7 @@ done
   $EXTRA \
   $DEBUG_FLAG \
   --min-sdk-version 26 --target-sdk-version 35 \
-  --version-code 12 --version-name 1.1.9 \
+  --version-code 13 --version-name 1.1.10 \
   --auto-add-overlay \
   "$OUT/work/compiled-res/"*.zip
 

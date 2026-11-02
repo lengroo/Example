@@ -175,6 +175,10 @@ service AAR。Hook 本身并不使用 service API，所以生成的 APK
   32dp 顶部内边距和 16dp 占位，只保留 Scaffold 自身的顶栏
   内边距加上 "About" 上方 12dp 的内容内边距。从 1.1.9 起，
   只打包和发布调试版。
+- **1.1.10** —— 切换界面时复用已有的 Activity
+  （`FLAG_ACTIVITY_REORDER_TO_FRONT`），而不是每次点击都
+  创建一个新的，这样返回栈永远不会超过两个界面，返回时
+  也不再需要按切换次数多次返回。
 
 ## 调试版与发布版
 
