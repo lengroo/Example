@@ -28,11 +28,13 @@ one-line summary under it, and a chevron on the right. Tap the
 card to expand its text underneath (the chevron rotates down);
 tap it again to collapse it. Each section expands and collapses
 independently.
-Since 1.1.14, a floating bottom bar mirrors the four sections
-(same icons, short labels). Tapping a bar item expands the
-matching card — scrolling it into view — and tapping again
-collapses it; the bar and the cards share one expanded state,
-and expanded items stay highlighted in the bar.
+Since 1.1.14, a floating bottom bar mirrors the four sections.
+Since 1.1.15, the bar is MiUIX's own `FloatingNavigationBar`
+component, with one icon per section (the items are icon-only
+by design). Tapping a bar item expands the matching card —
+scrolling it into view — and tapping again collapses it; the
+bar and the cards share one expanded state, and the item of an
+expanded section stays selected in the bar.
 
 A button at the top right of the MiUIX top bar, **"Original"**,
 switches to the **original interface** (`MainActivity`). That
@@ -220,6 +222,11 @@ you build with Gradle, the service classes are included as usual.
   labels: About, Install, Behavior, Legacy). Tapping a bar item
   toggles the matching card and scrolls it into view when
   expanding; expanded items are highlighted in the bar.
+- **1.1.15** — the bottom bar is rebuilt with MiUIX's own
+  `FloatingNavigationBar` component (1.1.14's bar was hand-built
+  from a Card and a Row). Same behaviour; the official items
+  are icon-only, with the section title as the content
+  description.
 
 ## Telegram forwarding
 

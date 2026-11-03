@@ -7,16 +7,12 @@ import androidx.activity.ComponentActivity
 import androidx.activity.compose.setContent
 import androidx.compose.animation.AnimatedVisibility
 import androidx.compose.animation.core.animateFloatAsState
-import androidx.compose.foundation.background
-import androidx.compose.foundation.clickable
 import androidx.compose.animation.expandVertically
 import androidx.compose.animation.fadeIn
 import androidx.compose.animation.fadeOut
 import androidx.compose.animation.shrinkVertically
 import androidx.compose.foundation.isSystemInDarkTheme
 import androidx.compose.foundation.layout.Arrangement
-import androidx.compose.foundation.layout.Column
-import androidx.compose.foundation.layout.Row
 import androidx.compose.foundation.layout.PaddingValues
 import androidx.compose.foundation.layout.fillMaxSize
 import androidx.compose.foundation.layout.fillMaxWidth
@@ -25,7 +21,6 @@ import androidx.compose.foundation.layout.size
 import androidx.compose.foundation.lazy.LazyColumn
 import androidx.compose.foundation.lazy.LazyListState
 import androidx.compose.foundation.lazy.rememberLazyListState
-import androidx.compose.foundation.shape.RoundedCornerShape
 import androidx.compose.runtime.Composable
 import androidx.compose.runtime.getValue
 import androidx.compose.runtime.mutableStateListOf
@@ -35,13 +30,13 @@ import androidx.compose.runtime.rememberCoroutineScope
 import androidx.compose.runtime.setValue
 import androidx.compose.ui.Alignment
 import androidx.compose.ui.Modifier
-import androidx.compose.ui.draw.clip
-import androidx.compose.ui.graphics.Color
 import androidx.compose.ui.draw.rotate
 import androidx.compose.ui.graphics.vector.ImageVector
 import androidx.compose.ui.platform.LocalContext
 import androidx.compose.ui.unit.dp
 import top.yukonga.miuix.kmp.basic.BasicComponent
+import top.yukonga.miuix.kmp.basic.FloatingNavigationBar
+import top.yukonga.miuix.kmp.basic.FloatingNavigationBarItem
 import top.yukonga.miuix.kmp.basic.Card
 import top.yukonga.miuix.kmp.basic.Icon
 import top.yukonga.miuix.kmp.basic.TextButton
@@ -88,6 +83,9 @@ import top.yukonga.miuix.kmp.theme.lightColorScheme
  * 1.1.14: a floating bottom bar mirrors the four sections;
  * tapping a bar item expands its card (scrolling it into view)
  * and tapping again collapses it. See [SectionBottomBar].
+ *
+ * 1.1.15: the bottom bar is now MiUIX's own FloatingNavigationBar
+ * component (in 1.1.14 it was hand-built from a Card and a Row).
  */
 class ComposeActivity : ComponentActivity() {
     override fun onCreate(savedInstanceState: Bundle?) {
@@ -205,12 +203,11 @@ class ComposeActivity : ComponentActivity() {
  */
 /**
  * One of the MiUIX screen's four sections: its card icon, the
- * short label used in the bottom bar, the card title and summary,
- * and the full text shown when the card is expanded.
+ * card title and summary, and the full text shown when the card
+ * is expanded.
  */
 private data class Section(
     val icon: ImageVector,
-    val label: String,
     val title: String,
     val summary: String,
     val content: String,
@@ -219,14 +216,12 @@ private data class Section(
 private fun exampleSections(): List<Section> = listOf(
     Section(
         icon = MiuixIcons.Info,
-        label = "About",
         title = "About",
         summary = "What this module is",
         content = "This is a minimal LSPosed / Vector module.",
     ),
     Section(
         icon = MiuixIcons.Download,
-        label = "Install",
         title = "Install and try",
         summary = "Install, enable, and read the logs",
         content = "1. Install this APK on a device with " +
@@ -239,7 +234,6 @@ private fun exampleSections(): List<Section> = listOf(
     ),
     Section(
         icon = MiuixIcons.ListView,
-        label = "Behavior",
         title = "What it does",
         summary = "It only logs \u2014 it changes nothing",
         content = "It only logs when a scoped app loads and " +
@@ -248,7 +242,6 @@ private fun exampleSections(): List<Section> = listOf(
     ),
     Section(
         icon = MiuixIcons.File,
-        label = "Legacy",
         title = "From the 1.0 interface",
         summary = "The original interface text, kept verbatim",
         content = "LibXposed Example\n\n" +
@@ -334,13 +327,13 @@ private fun SectionCard(
 }
 
 /**
- * The floating bottom bar: one item per section, same icons as
- * the cards, with a short label under each icon. Tapping an item
- * expands that section's card (and scrolls it into view, handled
- * by the caller); tapping it again collapses the card. An item
- * whose section is expanded is highlighted with a pill
- * background and the primary colour, like the selected tab in a
- * navigation bar.
+ * The floating bottom bar: MiUIX's own [FloatingNavigationBar],
+ * one item per section with the same icon as the section's card.
+ * Tapping an item expands that section's card (and scrolls it
+ * into view, handled by the caller); tapping it again collapses
+ * the card. An item is "selected" while its section is expanded.
+ * (FloatingNavigationBarItem is icon-only by design; the label
+ * is the item's content description.)
  */
 @Composable
 private fun SectionBottomBar(
@@ -348,48 +341,14 @@ private fun SectionBottomBar(
     expandedStates: List<Boolean>,
     onToggle: (Int) -> Unit,
 ) {
-    Card(
-        modifier = Modifier
-            .fillMaxWidth()
-            .padding(horizontal = 24.dp, vertical = 10.dp),
-        insideMargin = PaddingValues(horizontal = 6.dp, vertical = 6.dp),
-    ) {
-        Row(modifier = Modifier.fillMaxWidth()) {
-            sections.forEachIndexed { index, section ->
-                val selected = expandedStates[index]
-                val tint = if (selected) {
-                    MiuixTheme.colorScheme.primary
-                } else {
-                    MiuixTheme.colorScheme.onBackgroundVariant
-                }
-                Column(
-                    modifier = Modifier
-                        .weight(1f)
-                        .clip(RoundedCornerShape(20.dp))
-                        .background(
-                            if (selected) {
-                                MiuixTheme.colorScheme.secondaryContainer
-                            } else {
-                                Color.Transparent
-                            }
-                        )
-                        .clickable { onToggle(index) }
-                        .padding(vertical = 6.dp),
-                    horizontalAlignment = Alignment.CenterHorizontally,
-                ) {
-                    Icon(
-                        imageVector = section.icon,
-                        contentDescription = section.title,
-                        modifier = Modifier.size(22.dp),
-                        tint = tint,
-                    )
-                    Text(
-                        text = section.label,
-                        fontSize = MiuixTheme.textStyles.footnote1.fontSize,
-                        color = tint,
-                    )
-                }
-            }
+    FloatingNavigationBar {
+        sections.forEachIndexed { index, section ->
+            FloatingNavigationBarItem(
+                selected = expandedStates[index],
+                onClick = { onToggle(index) },
+                icon = section.icon,
+                label = section.title,
+            )
         }
     }
 }

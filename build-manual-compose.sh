@@ -96,6 +96,10 @@
 # binary, so the API push tool cannot sync it — it is uploaded
 # via the GitHub web UI, separately from the text files.
 #
+# NOTE (1.1.15): the bottom bar now uses MiUIX's own
+# FloatingNavigationBar / FloatingNavigationBarItem (in 1.1.14
+# it was hand-built from a Card and a Row). MainActivity also
+# checks NavigationBarKt as a regression guard.
 # NOTE (1.1.14): the MiUIX screen gained a floating bottom
 # bar with one item per section (same icons as the cards).
 # Section expanded state is hoisted to the Scaffold level and
@@ -182,7 +186,7 @@ done
   $EXTRA \
   $DEBUG_FLAG \
   --min-sdk-version 26 --target-sdk-version 35 \
-  --version-code 17 --version-name 1.1.14 \
+  --version-code 18 --version-name 1.1.15 \
   --auto-add-overlay \
   "$OUT/work/compiled-res/"*.zip
 
