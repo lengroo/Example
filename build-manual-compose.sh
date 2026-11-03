@@ -95,6 +95,13 @@
 # downscales it for lower densities. Note: this PNG is a
 # binary, so the API push tool cannot sync it — it is uploaded
 # via the GitHub web UI, separately from the text files.
+#
+# NOTE (1.1.12): the MiUIX screen's four sections now start
+# collapsed (CollapsibleSection in ComposeActivity): tapping a
+# section title expands its Card, tapping again collapses it.
+# This only adds Compose animation/foundation classes and the
+# MiUIX ArrowUpDown icon (miuix-core), all already in the dex —
+# no new library artifacts are needed.
 set -euo pipefail
 cd "$(dirname "$0")"
 PROJECT_DIR="$PWD"
@@ -164,7 +171,7 @@ done
   $EXTRA \
   $DEBUG_FLAG \
   --min-sdk-version 26 --target-sdk-version 35 \
-  --version-code 14 --version-name 1.1.11 \
+  --version-code 15 --version-name 1.1.12 \
   --auto-add-overlay \
   "$OUT/work/compiled-res/"*.zip
 

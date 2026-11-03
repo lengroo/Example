@@ -21,6 +21,11 @@ It shows, in MiUIX `Card`s:
 - **From the 1.0 interface** — the full text of the original
   framework interface, kept verbatim.
 
+Since 1.1.12, each of these sections starts out collapsed: only
+its title (with an up/down arrow) is shown. Tap the title to
+expand its card, and tap the title or the open card again to
+collapse it. Each section expands and collapses independently.
+
 A button at the top right of the MiUIX top bar, **"Original"**,
 switches to the **original interface** (`MainActivity`). That
 button, and the diagnostics below, are debugging features: they
@@ -193,6 +198,10 @@ you build with Gradle, the service classes are included as usual.
   user-provided image, shipped as a 192x192
   `mipmap-xxxhdpi/ic_launcher.png` and referenced as the app's
   icon and round icon in the manifest.
+- **1.1.12** — the MiUIX screen's four sections (About, Install
+  and try, What it does, From the 1.0 interface) now start
+  collapsed. Tap a section title to expand its card; tap the
+  title or the open card again to collapse it.
 
 ## Telegram forwarding
 
