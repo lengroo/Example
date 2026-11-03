@@ -2,7 +2,10 @@
 #
 # Trigger: when a release is published on this repo (the normal
 # v1.1.x release flow), this workflow downloads the release APK
-# and sends it to Telegram with the Telegram Bot API.
+# and sends it to Telegram with the Telegram Bot API: first a
+# text message with the release notes as the changelog, then the
+# APK itself, shown under the name "<app name>（<version>）.apk"
+# instead of app-debug.apk.
 #
 # Secrets (repo Settings > Secrets and variables > Actions):
 #   TELEGRAM_BOT_TOKEN — the bot token. Never put it in this file.
@@ -15,7 +18,7 @@
 #
 # Manual test: Actions > "Forward release to Telegram" > Run
 # workflow, with the tag of an existing release (e.g. v1.1.10).
-# That re-sends that release's app-debug.apk.
+# That re-sends that release's changelog and APK.
 
 name: Forward release to Telegram
 
@@ -74,18 +77,47 @@ jobs:
           ls -lh app-debug.apk
           file app-debug.apk
 
-      - name: Send APK to Telegram
+      - name: Fetch the release notes (changelog)
+        env:
+          GH_TOKEN: ${{ github.token }}
+          TAG: ${{ steps.release.outputs.tag }}
+        run: |
+          gh release view "$TAG" --json body --jq '.body // ""' > changelog.txt
+          wc -c changelog.txt
+
+      - name: Send changelog and APK to Telegram
         env:
           BOT_TOKEN: ${{ secrets.TELEGRAM_BOT_TOKEN }}
           CHAT_ID: ${{ secrets.TELEGRAM_CHAT_ID }}
           TAG: ${{ steps.release.outputs.tag }}
           REPO: ${{ github.repository }}
         run: |
-          CAPTION="LibXposed Example ${TAG}
-          Release: https://github.com/${REPO}/releases/tag/${TAG}
-          Asset: app-debug.apk (debug build)"
-          curl -sSL -X POST \
+          VERSION="${TAG#v}"
+          DISPLAY_NAME="LibXposed Example（${VERSION}）.apk"
+          # 1) Text message first: title, release link, then the
+          #    full release notes as the changelog (bilingual when
+          #    the release notes are). A Telegram text message
+          #    allows 4096 characters, far more than the 1024 a
+          #    document caption allows.
+          {
+            echo "LibXposed Example ${TAG}"
+            echo "Release: https://github.com/${REPO}/releases/tag/${TAG}"
+            if [ -s changelog.txt ]; then
+              echo ""
+              cat changelog.txt
+            fi
+          } > message.txt
+          curl -sSL --fail -X POST \
+            "https://api.telegram.org/bot${BOT_TOKEN}/sendMessage" \
+            --data-urlencode "chat_id=${CHAT_ID}" \
+            --data-urlencode "text@message.txt"
+          echo ""
+          # 2) Then the APK itself, shown in Telegram under the
+          #    name "<app name>（<version>）.apk" instead of the release asset's plain
+          #    app-debug.apk name. --fail makes the step fail if
+          #    Telegram rejects either send.
+          curl -sSL --fail -X POST \
             "https://api.telegram.org/bot${BOT_TOKEN}/sendDocument" \
             -F "chat_id=${CHAT_ID}" \
-            -F "document=@app-debug.apk" \
-            -F "caption=${CAPTION}"
+            -F "document=@app-debug.apk;filename=${DISPLAY_NAME}" \
+            -F "caption=LibXposed Example ${TAG}"
