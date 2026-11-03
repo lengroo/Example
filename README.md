@@ -28,6 +28,11 @@ one-line summary under it, and a chevron on the right. Tap the
 card to expand its text underneath (the chevron rotates down);
 tap it again to collapse it. Each section expands and collapses
 independently.
+Since 1.1.14, a floating bottom bar mirrors the four sections
+(same icons, short labels). Tapping a bar item expands the
+matching card — scrolling it into view — and tapping again
+collapses it; the bar and the cards share one expanded state,
+and expanded items stay highlighted in the bar.
 
 A button at the top right of the MiUIX top bar, **"Original"**,
 switches to the **original interface** (`MainActivity`). That
@@ -210,6 +215,11 @@ you build with Gradle, the service classes are included as usual.
   chevron), in the style of a MIUI settings list. Tapping a card
   expands its text inside the same card. Adds the MiUIX
   `miuix-icons` dependency for the section icons.
+- **1.1.14** — the MiUIX screen gains a floating bottom bar
+  with one item per section (same icons as the cards, short
+  labels: About, Install, Behavior, Legacy). Tapping a bar item
+  toggles the matching card and scrolls it into view when
+  expanding; expanded items are highlighted in the bar.
 
 ## Telegram forwarding
 

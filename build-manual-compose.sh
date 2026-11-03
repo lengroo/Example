@@ -96,6 +96,11 @@
 # binary, so the API push tool cannot sync it — it is uploaded
 # via the GitHub web UI, separately from the text files.
 #
+# NOTE (1.1.14): the MiUIX screen gained a floating bottom
+# bar with one item per section (same icons as the cards).
+# Section expanded state is hoisted to the Scaffold level and
+# shared between the cards and the bar; tapping a bar item
+# toggles its card and scrolls it into view when expanding.
 # NOTE (1.1.13): the MiUIX screen's sections are now settings-
 # style cards (icon + title + summary + chevron, BasicComponent
 # from miuix-ui). The leading icons come from the new
@@ -177,7 +182,7 @@ done
   $EXTRA \
   $DEBUG_FLAG \
   --min-sdk-version 26 --target-sdk-version 35 \
-  --version-code 16 --version-name 1.1.13 \
+  --version-code 17 --version-name 1.1.14 \
   --auto-add-overlay \
   "$OUT/work/compiled-res/"*.zip
 
