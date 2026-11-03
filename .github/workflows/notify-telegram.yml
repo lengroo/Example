@@ -81,8 +81,11 @@ jobs:
         env:
           GH_TOKEN: ${{ github.token }}
           TAG: ${{ steps.release.outputs.tag }}
+          REPO: ${{ github.repository }}
         run: |
-          gh release view "$TAG" --json body --jq '.body // ""' > changelog.txt
+          # No checkout step in this workflow, so gh has no git
+          # repository context: pass --repo explicitly.
+          gh release view "$TAG" --repo "$REPO" --json body --jq '.body // ""' > changelog.txt
           wc -c changelog.txt
 
       - name: Send changelog and APK to Telegram
