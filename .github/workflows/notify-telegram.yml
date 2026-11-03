@@ -2,9 +2,18 @@
 #
 # Trigger: when a release is published on this repo (the normal
 # v1.1.x release flow), this workflow downloads the release APK
-# and sends it to Telegram with the Telegram Bot API: first a
-# text message with the release notes as the changelog, then the
-# APK itself, shown under the name "<app name>（<version>）.apk"
+# and sends it to Telegram with the Telegram Bot API, with a
+# caption in this style (adopted 2026-11-03, from the next
+# version on):
+#
+#   New release from lengroo/Example
+#
+#   Version: v1.1.13-<short commit sha> (<versionCode>)
+#
+#   Commit message:
+#   <the release commit's full message, in a code block>
+#
+# The APK is shown under the name "<app name>（<version>）.apk"
 # instead of app-debug.apk.
 #
 # Secrets (repo Settings > Secrets and variables > Actions):
@@ -77,18 +86,22 @@ jobs:
           ls -lh app-debug.apk
           file app-debug.apk
 
-      - name: Fetch the release notes (changelog)
+      - name: Fetch release info
         env:
           GH_TOKEN: ${{ github.token }}
           TAG: ${{ steps.release.outputs.tag }}
           REPO: ${{ github.repository }}
         run: |
-          # No checkout step in this workflow, so gh has no git
-          # repository context: pass --repo explicitly.
-          gh release view "$TAG" --repo "$REPO" --json body --jq '.body // ""' > changelog.txt
-          wc -c changelog.txt
+          # No checkout step in this workflow, so gh needs --repo /
+          # explicit API paths. One commits call gives both the
+          # release commit's SHA and its full message.
+          gh api "repos/${REPO}/commits/${TAG}" --jq '.sha' > commit_sha.txt
+          gh api "repos/${REPO}/commits/${TAG}" --jq '.commit.message' > commit_message.txt
+          gh api "repos/${REPO}/contents/app/build.gradle.kts?ref=${TAG}" --jq '.content' | base64 -d > build-gradle.txt
+          grep -oP 'versionCode\s*=\s*\K[0-9]+' build-gradle.txt | head -1 > version_code.txt
+          echo "commit: $(cat commit_sha.txt)  versionCode: $(cat version_code.txt)"
 
-      - name: Send changelog and APK to Telegram
+      - name: Send APK to Telegram
         env:
           BOT_TOKEN: ${{ secrets.TELEGRAM_BOT_TOKEN }}
           CHAT_ID: ${{ secrets.TELEGRAM_CHAT_ID }}
@@ -97,30 +110,31 @@ jobs:
         run: |
           VERSION="${TAG#v}"
           DISPLAY_NAME="LibXposed Example（${VERSION}）.apk"
-          # 1) Text message first: title, release link, then the
-          #    full release notes as the changelog (bilingual when
-          #    the release notes are). A Telegram text message
-          #    allows 4096 characters, far more than the 1024 a
-          #    document caption allows.
-          {
-            echo "LibXposed Example ${TAG}"
-            echo "Release: https://github.com/${REPO}/releases/tag/${TAG}"
-            if [ -s changelog.txt ]; then
-              echo ""
-              cat changelog.txt
-            fi
-          } > message.txt
-          curl -sSL --fail -X POST \
-            "https://api.telegram.org/bot${BOT_TOKEN}/sendMessage" \
-            --data-urlencode "chat_id=${CHAT_ID}" \
-            --data-urlencode "text@message.txt"
-          echo ""
-          # 2) Then the APK itself, shown in Telegram under the
-          #    name "<app name>（<version>）.apk" instead of the release asset's plain
-          #    app-debug.apk name. --fail makes the step fail if
-          #    Telegram rejects either send.
+          # Build the caption in the adopted style. The commit
+          # message goes in a <pre> block (HTML parse mode), so it
+          # must be HTML-escaped; keep the whole caption safely
+          # under Telegram's 1024-character document caption limit.
+          SHORT_SHA="$(cut -c1-7 commit_sha.txt)"
+          VERSION_CODE="$(cat version_code.txt)"
+          python3 - "$TAG" "$SHORT_SHA" "$VERSION_CODE" "$REPO" <<'PYEOF'
+          import html, sys
+          tag, short_sha, version_code, repo = sys.argv[1:5]
+          message = open('commit_message.txt', encoding='utf-8').read().strip()
+          if len(message) > 700:
+              message = message[:700].rstrip() + '…'
+          caption = (
+              f"New release from {repo}\n\n"
+              f"Version: {tag}-{short_sha} ({version_code})\n\n"
+              f"Commit message:\n"
+              f"<pre>{html.escape(message)}</pre>"
+          )
+          open('caption.txt', 'w', encoding='utf-8').write(caption)
+          print(caption)
+          PYEOF
+          # --fail makes the step fail if Telegram rejects the send.
           curl -sSL --fail -X POST \
             "https://api.telegram.org/bot${BOT_TOKEN}/sendDocument" \
             -F "chat_id=${CHAT_ID}" \
             -F "document=@app-debug.apk;filename=${DISPLAY_NAME}" \
-            -F "caption=LibXposed Example ${TAG}"
+            -F "parse_mode=HTML" \
+            -F "caption=<caption.txt"
