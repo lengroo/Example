@@ -21,10 +21,13 @@ It shows, in MiUIX `Card`s:
 - **From the 1.0 interface** — the full text of the original
   framework interface, kept verbatim.
 
-Since 1.1.12, each of these sections starts out collapsed: only
-its title (with an up/down arrow) is shown. Tap the title to
-expand its card, and tap the title or the open card again to
-collapse it. Each section expands and collapses independently.
+Since 1.1.12, each of these sections starts out collapsed.
+Since 1.1.13, each section is a settings-style card in the style
+of a MIUI settings list: a leading icon, the title with a
+one-line summary under it, and a chevron on the right. Tap the
+card to expand its text underneath (the chevron rotates down);
+tap it again to collapse it. Each section expands and collapses
+independently.
 
 A button at the top right of the MiUIX top bar, **"Original"**,
 switches to the **original interface** (`MainActivity`). That
@@ -202,6 +205,11 @@ you build with Gradle, the service classes are included as usual.
   and try, What it does, From the 1.0 interface) now start
   collapsed. Tap a section title to expand its card; tap the
   title or the open card again to collapse it.
+- **1.1.13** — the MiUIX screen's sections are now
+  settings-style cards (leading icon, title, one-line summary,
+  chevron), in the style of a MIUI settings list. Tapping a card
+  expands its text inside the same card. Adds the MiUIX
+  `miuix-icons` dependency for the section icons.
 
 ## Telegram forwarding
 

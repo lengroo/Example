@@ -13,8 +13,8 @@ android {
         applicationId = "com.example.libxposedexample"
         minSdk = 26
         targetSdk = 35
-        versionCode = 15
-        versionName = "1.1.12"
+        versionCode = 16
+        versionName = "1.1.13"
     }
 
     buildTypes {
@@ -70,5 +70,6 @@ dependencies {
     // artifact brings in the JetBrains Compose foundation/ui layers,
     // which resolve to the matching androidx.compose artifacts.
     implementation(libs.miuix.ui)
+    implementation(libs.miuix.icons)
     implementation(libs.activity.compose)
 }

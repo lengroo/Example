@@ -96,6 +96,12 @@
 # binary, so the API push tool cannot sync it — it is uploaded
 # via the GitHub web UI, separately from the text files.
 #
+# NOTE (1.1.13): the MiUIX screen's sections are now settings-
+# style cards (icon + title + summary + chevron, BasicComponent
+# from miuix-ui). The leading icons come from the new
+# miuix-icons-android 0.9.4 dependency; its classes.jar was
+# added to jars/ and its AAR to the resource inputs. MainActivity
+# checks ComponentKt and the icons' InfoKt as regression guards.
 # NOTE (1.1.12): the MiUIX screen's four sections now start
 # collapsed (CollapsibleSection in ComposeActivity): tapping a
 # section title expands its Card, tapping again collapses it.
@@ -171,7 +177,7 @@ done
   $EXTRA \
   $DEBUG_FLAG \
   --min-sdk-version 26 --target-sdk-version 35 \
-  --version-code 15 --version-name 1.1.12 \
+  --version-code 16 --version-name 1.1.13 \
   --auto-add-overlay \
   "$OUT/work/compiled-res/"*.zip
 
