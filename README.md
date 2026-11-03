@@ -233,6 +233,12 @@ you build with Gradle, the service classes are included as usual.
   Its items show a short label under the icon again (About,
   Install, Behavior, Legacy); the selected item's label is
   bold.
+- **1.1.17** — an optimization pass following the miuix skill:
+  the root theme is now owned by a `ThemeController` (System
+  mode) instead of a hand-rolled light/dark branch, the
+  section list uses MiUIX's spring overscroll, and expanded
+  section text uses the `paragraph` text style. No behaviour
+  changes.
 
 ## Telegram forwarding
 

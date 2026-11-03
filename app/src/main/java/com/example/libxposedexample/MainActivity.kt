@@ -52,7 +52,7 @@ class MainActivity : Activity() {
         }
 
         val title = TextView(this).apply {
-            text = "LibXposed Example 1.1.16"
+            text = "LibXposed Example 1.1.17"
             textSize = 22f
             setPadding(0, 0, 0, dp(24))
         }
@@ -158,6 +158,8 @@ class MainActivity : Activity() {
             "androidx.core.viewtree.ViewTree",
             "androidx.window.layout.WindowMetricsCalculator",
             "top.yukonga.miuix.kmp.theme.MiuixThemeKt",
+            "top.yukonga.miuix.kmp.theme.ThemeController",
+            "top.yukonga.miuix.kmp.utils.OverscrollKt",
             "top.yukonga.miuix.kmp.basic.ScaffoldKt",
             "top.yukonga.miuix.kmp.basic.CardKt",
             "top.yukonga.miuix.kmp.basic.ComponentKt",

@@ -11,7 +11,6 @@ import androidx.compose.animation.expandVertically
 import androidx.compose.animation.fadeIn
 import androidx.compose.animation.fadeOut
 import androidx.compose.animation.shrinkVertically
-import androidx.compose.foundation.isSystemInDarkTheme
 import androidx.compose.foundation.layout.Arrangement
 import androidx.compose.foundation.layout.PaddingValues
 import androidx.compose.foundation.layout.fillMaxSize
@@ -50,9 +49,10 @@ import top.yukonga.miuix.kmp.icon.extended.File
 import top.yukonga.miuix.kmp.icon.extended.Info
 import top.yukonga.miuix.kmp.icon.extended.ListView
 import kotlinx.coroutines.launch
+import top.yukonga.miuix.kmp.theme.ColorSchemeMode
 import top.yukonga.miuix.kmp.theme.MiuixTheme
-import top.yukonga.miuix.kmp.theme.darkColorScheme
-import top.yukonga.miuix.kmp.theme.lightColorScheme
+import top.yukonga.miuix.kmp.theme.ThemeController
+import top.yukonga.miuix.kmp.utils.overScrollVertical
 
 /**
  * The real MiUIX interface, moved here in 1.1.2 so the launcher
@@ -90,6 +90,12 @@ import top.yukonga.miuix.kmp.theme.lightColorScheme
  * 1.1.16: the bottom bar switched from the floating bar to
  * MiUIX's full-width NavigationBar, whose items show a short
  * label under the icon.
+ *
+ * 1.1.17: optimization pass following the miuix skill: the
+ * root theme moved to a ThemeController (System mode), the
+ * section list gained MiUIX's spring overscroll, and
+ * expanded section text now uses the paragraph text style.
+ * Behavior is unchanged.
  */
 class ComposeActivity : ComponentActivity() {
     override fun onCreate(savedInstanceState: Bundle?) {
@@ -100,8 +106,17 @@ class ComposeActivity : ComponentActivity() {
         actionBar?.hide()
         try {
             setContent {
-                val colors = if (isSystemInDarkTheme()) darkColorScheme() else lightColorScheme()
-                MiuixTheme(colors = colors) {
+                // Optimization pass (miuix skill, setup-and-theme):
+                // the root theme is owned by a ThemeController in
+                // System mode instead of a hand-rolled
+                // isSystemInDarkTheme branch picking a fixed
+                // light/dark scheme pair. The light/dark result is
+                // the same, but the controller also provides
+                // MiUIX's overscroll factory and scheme-mode local.
+                val themeController = remember {
+                    ThemeController(ColorSchemeMode.System)
+                }
+                MiuixTheme(controller = themeController) {
                     // Section state lives here so the cards and the
                     // bottom bar share it: either one can expand or
                     // collapse a section.
@@ -325,6 +340,9 @@ private fun SectionCard(
         ) {
             Text(
                 text = section.content,
+                // Long-form reading text: the paragraph style
+                // (miuix skill, design-language typography roles).
+                style = MiuixTheme.textStyles.paragraph,
                 modifier = Modifier.padding(
                     start = 16.dp,
                     end = 16.dp,
@@ -372,7 +390,10 @@ private fun ExampleScreen(
     LazyColumn(
         modifier = Modifier
             .fillMaxSize()
-            .padding(paddingValues),
+            .padding(paddingValues)
+            // MiUIX's spring overscroll (the HyperOS list feel),
+            // as in the library's own example pages.
+            .overScrollVertical(),
         state = listState,
         contentPadding = PaddingValues(horizontal = 12.dp, vertical = 12.dp),
         verticalArrangement = Arrangement.spacedBy(12.dp),

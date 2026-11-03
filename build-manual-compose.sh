@@ -102,6 +102,15 @@
 # Behavior, Legacy), so the Section data class carries the
 # short label again. First built as an unreleased preview at
 # Diane's request, then approved for release as 1.1.16.
+# NOTE (1.1.17): optimization pass following the miuix skill:
+# the root theme is owned by a ThemeController (System mode)
+# instead of a hand-rolled isSystemInDarkTheme branch, the
+# section list uses MiUIX's spring overscroll
+# (Modifier.overScrollVertical), and expanded section text
+# uses the paragraph text style. MainActivity checks
+# ThemeController and OverscrollKt as regression guards. No
+# new library artifacts: both classes are in miuix-ui, which
+# is already in the dex.
 # NOTE (1.1.15): the bottom bar now uses MiUIX's own
 # FloatingNavigationBar / FloatingNavigationBarItem (in 1.1.14
 # it was hand-built from a Card and a Row). MainActivity also
@@ -192,7 +201,7 @@ done
   $EXTRA \
   $DEBUG_FLAG \
   --min-sdk-version 26 --target-sdk-version 35 \
-  --version-code 19 --version-name 1.1.16 \
+  --version-code 20 --version-name 1.1.17 \
   --auto-add-overlay \
   "$OUT/work/compiled-res/"*.zip
 

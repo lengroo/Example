@@ -216,6 +216,10 @@ service AAR。Hook 本身并不使用 service API，所以生成的 APK
   换成 MiUIX 全宽的 `NavigationBar`。条目在图标下方
   重新带上短标签（About、Install、Behavior、Legacy），
   选中条目的标签会加粗。
+- **1.1.17** —— 按 miuix skill 做的一轮优化：根主题改为
+  由 `ThemeController`（System 模式）托管，不再手写
+  深浅色分支；区块列表启用 MiUIX 的弹性 overscroll；
+  展开后的正文改用 `paragraph` 文本样式。行为没有变化。
 
 ## Telegram 转发
 
