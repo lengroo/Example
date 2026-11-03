@@ -35,8 +35,8 @@ import androidx.compose.ui.graphics.vector.ImageVector
 import androidx.compose.ui.platform.LocalContext
 import androidx.compose.ui.unit.dp
 import top.yukonga.miuix.kmp.basic.BasicComponent
-import top.yukonga.miuix.kmp.basic.FloatingNavigationBar
-import top.yukonga.miuix.kmp.basic.FloatingNavigationBarItem
+import top.yukonga.miuix.kmp.basic.NavigationBar
+import top.yukonga.miuix.kmp.basic.NavigationBarItem
 import top.yukonga.miuix.kmp.basic.Card
 import top.yukonga.miuix.kmp.basic.Icon
 import top.yukonga.miuix.kmp.basic.TextButton
@@ -86,6 +86,10 @@ import top.yukonga.miuix.kmp.theme.lightColorScheme
  *
  * 1.1.15: the bottom bar is now MiUIX's own FloatingNavigationBar
  * component (in 1.1.14 it was hand-built from a Card and a Row).
+ *
+ * 1.1.16: the bottom bar switched from the floating bar to
+ * MiUIX's full-width NavigationBar, whose items show a short
+ * label under the icon.
  */
 class ComposeActivity : ComponentActivity() {
     override fun onCreate(savedInstanceState: Bundle?) {
@@ -208,6 +212,7 @@ class ComposeActivity : ComponentActivity() {
  */
 private data class Section(
     val icon: ImageVector,
+    val label: String,
     val title: String,
     val summary: String,
     val content: String,
@@ -216,12 +221,14 @@ private data class Section(
 private fun exampleSections(): List<Section> = listOf(
     Section(
         icon = MiuixIcons.Info,
+        label = "About",
         title = "About",
         summary = "What this module is",
         content = "This is a minimal LSPosed / Vector module.",
     ),
     Section(
         icon = MiuixIcons.Download,
+        label = "Install",
         title = "Install and try",
         summary = "Install, enable, and read the logs",
         content = "1. Install this APK on a device with " +
@@ -234,6 +241,7 @@ private fun exampleSections(): List<Section> = listOf(
     ),
     Section(
         icon = MiuixIcons.ListView,
+        label = "Behavior",
         title = "What it does",
         summary = "It only logs \u2014 it changes nothing",
         content = "It only logs when a scoped app loads and " +
@@ -242,6 +250,7 @@ private fun exampleSections(): List<Section> = listOf(
     ),
     Section(
         icon = MiuixIcons.File,
+        label = "Legacy",
         title = "From the 1.0 interface",
         summary = "The original interface text, kept verbatim",
         content = "LibXposed Example\n\n" +
@@ -327,13 +336,12 @@ private fun SectionCard(
 }
 
 /**
- * The floating bottom bar: MiUIX's own [FloatingNavigationBar],
- * one item per section with the same icon as the section's card.
- * Tapping an item expands that section's card (and scrolls it
- * into view, handled by the caller); tapping it again collapses
- * the card. An item is "selected" while its section is expanded.
- * (FloatingNavigationBarItem is icon-only by design; the label
- * is the item's content description.)
+ * The bottom bar: MiUIX's own [NavigationBar] (full width, items
+ * with an icon and a short label), one item per section with the
+ * same icon as the section's card. Tapping an item expands that
+ * section's card (and scrolls it into view, handled by the
+ * caller); tapping it again collapses the card. An item is
+ * "selected" while its section is expanded.
  */
 @Composable
 private fun SectionBottomBar(
@@ -341,13 +349,13 @@ private fun SectionBottomBar(
     expandedStates: List<Boolean>,
     onToggle: (Int) -> Unit,
 ) {
-    FloatingNavigationBar {
+    NavigationBar {
         sections.forEachIndexed { index, section ->
-            FloatingNavigationBarItem(
+            NavigationBarItem(
                 selected = expandedStates[index],
                 onClick = { onToggle(index) },
                 icon = section.icon,
-                label = section.title,
+                label = section.label,
             )
         }
     }

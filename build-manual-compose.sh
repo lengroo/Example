@@ -96,6 +96,12 @@
 # binary, so the API push tool cannot sync it — it is uploaded
 # via the GitHub web UI, separately from the text files.
 #
+# NOTE (1.1.16): the bottom bar switched from the floating
+# FloatingNavigationBar to MiUIX's full-width NavigationBar;
+# its items show a short label under the icon (About, Install,
+# Behavior, Legacy), so the Section data class carries the
+# short label again. First built as an unreleased preview at
+# Diane's request, then approved for release as 1.1.16.
 # NOTE (1.1.15): the bottom bar now uses MiUIX's own
 # FloatingNavigationBar / FloatingNavigationBarItem (in 1.1.14
 # it was hand-built from a Card and a Row). MainActivity also
@@ -186,7 +192,7 @@ done
   $EXTRA \
   $DEBUG_FLAG \
   --min-sdk-version 26 --target-sdk-version 35 \
-  --version-code 18 --version-name 1.1.15 \
+  --version-code 19 --version-name 1.1.16 \
   --auto-add-overlay \
   "$OUT/work/compiled-res/"*.zip
 
